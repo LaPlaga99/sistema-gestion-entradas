@@ -37,7 +37,7 @@
       .seat-grid-11, .seat-grid-14 { gap: 1.5px; }
     }
 
-    /* TAMAÑO DE LETRA NORMAL RESTAURADO */
+    /* TAMAÑO DE LETRA NORMAL */
     .seat-btn {
       aspect-ratio: 1;
       font-size: 8.5px;
@@ -352,7 +352,6 @@
     let currentHighlightedIntegrantId = null;
     let highlightedIntegrantSeats = new Set();
     let editingIntegrantId = null;
-    let editingOriginalSeats = [];
     let db = null;
     let auth = null;
     let currentUserRole = 'guest';
@@ -532,12 +531,10 @@
 
     function startEditingIntegrant(item) {
       editingIntegrantId = item.id;
-      editingOriginalSeats = [...(item.seats || [])];
-
       document.getElementById('op-integrant-name').value = item.name;
       document.getElementById('op-integrant-dni').value = item.dni || '';
 
-      operatorSelectedSeats = new Set(editingOriginalSeats);
+      operatorSelectedSeats = new Set(item.seats || []);
       updateOperatorSeatsDisplay();
 
       document.getElementById('btn-save-text').innerText = "Guardar Cambios";
@@ -549,7 +546,6 @@
 
     function cancelEditingIntegrant() {
       editingIntegrantId = null;
-      editingOriginalSeats = [];
       operatorSelectedSeats.clear();
 
       document.getElementById('op-integrant-name').value = '';
@@ -693,38 +689,40 @@
           if (!name) { alert("Ingresa el integrante."); return; }
           if (seatsArray.length === 0) { alert("Selecciona al menos una butaca."); return; }
 
-          // CORRECCIÓN CLAVE: Si estamos editando, liberar explícitamente los asientos antiguos que ya no se seleccionaron
-          if (editingIntegrantId) {
-            editingOriginalSeats.forEach(sNum => {
-              if (!seatsArray.includes(sNum)) {
-                delete seatsData[sNum];
-              }
-            });
+          // CORRECCIÓN DEFINITIVA: Limpiar cualquier butaca anterior vinculada a este integrante (por ID o por nombre) en el mapa global
+          for (let sNum = 1; sNum <= 792; sNum++) {
+            if (seatsData[sNum] && (
+              (editingIntegrantId && seatsData[sNum].integrantId === editingIntegrantId) ||
+              (seatsData[sNum].clientName && seatsData[sNum].clientName.toLowerCase() === name.toLowerCase())
+            )) {
+              delete seatsData[sNum];
+            }
           }
 
-          // Asignar los nuevos asientos seleccionados
+          // Asignar los nuevos asientos seleccionados con su respectivo vínculo
+          const targetId = editingIntegrantId || ('int_' + Date.now());
           seatsArray.forEach(sNum => {
             seatsData[sNum] = {
               status: 'reservado',
               clientName: name,
               clientDni: dni,
+              integrantId: targetId,
               updatedAt: new Date().toISOString()
             };
           });
 
           try {
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'seating_map'), { seats: seatsData }, { merge: true });
+            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'seating_map'), { seats: seatsData });
             
             if (editingIntegrantId) {
               await setDoc(doc(db, 'integrants', editingIntegrantId), { name, dni, seats: seatsArray, updatedAt: new Date().toISOString() }, { merge: true });
               alert(`¡Asientos actualizados correctamente para ${name}!`);
             } else {
-              await addDoc(collection(db, 'integrants'), { name, dni, seats: seatsArray, updatedAt: new Date().toISOString() });
+              await setDoc(doc(db, 'integrants', targetId), { name, dni, seats: seatsArray, updatedAt: new Date().toISOString() });
               alert(`¡Asignación exitosa para ${name}!`);
             }
 
             editingIntegrantId = null;
-            editingOriginalSeats = [];
             operatorSelectedSeats.clear();
 
             document.getElementById('op-integrant-name').value = '';
@@ -816,7 +814,6 @@
         highlightedIntegrantSeats.clear();
         currentHighlightedIntegrantId = null;
         editingIntegrantId = null;
-        editingOriginalSeats = [];
         alert("¡Mapa e integrantes reiniciados!");
       } catch (err) {
         alert("Error al reiniciar.");
