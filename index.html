@@ -128,8 +128,8 @@
 
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 overflow-y-auto">
 
-    <!-- KPIS -->
-    <section class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+    <!-- KPIS (SOLO VISIBLE PARA OPERATORS Y ADMINS) -->
+    <section id="kpi-section" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 hidden">
       <div class="bg-slate-900/90 border border-amber-600/30 p-3 sm:p-4 rounded-xl shadow-sm">
         <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">Total Asientos<i data-lucide="grid" class="w-4 h-4 text-amber-500/60"></i></div>
         <div class="text-xl sm:text-2xl font-bold text-white mt-1" id="kpi-total">792</div>
@@ -149,7 +149,7 @@
       </div>
     </section>
 
-    <!-- PANEL DE INTEGRANTES Y ASIGNACIÓN -->
+    <!-- PANEL DE INTEGRANTES Y ASIGNACIÓN (SOLO OPERATORS Y ADMINS) -->
     <section id="operator-integrants-section" class="bg-slate-900 border border-amber-500/40 rounded-2xl p-4 space-y-4 hidden shadow-2xl">
       <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-800 pb-3">
         <div class="flex items-center gap-2 text-amber-300 font-bold text-sm font-cinzel">
@@ -378,7 +378,6 @@
       return total;
     }
 
-    // RENDERIZADO CON FILTROS ACTIVOS DE ZONA Y ESTADO
     function renderAllGrids() {
       const searchInput = document.getElementById('search-input');
       const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
@@ -390,7 +389,6 @@
         const parentContainer = document.getElementById(zone.containerId);
         if (!container || !parentContainer) continue;
 
-        // Filtrar contenedor completo por zona
         if (zoneFilter !== 'ALL' && zone.name !== zoneFilter) {
           parentContainer.style.display = 'none';
           continue;
@@ -406,7 +404,6 @@
           const status = seatInfo.status || 'disponible';
           const seatOwner = (seatInfo.clientName || '').toLowerCase();
 
-          // Filtrar por estado (disponible / reservado)
           if (statusFilter !== 'all' && status !== statusFilter) {
             continue;
           }
@@ -543,12 +540,14 @@
       const dynamicAdminContainer = document.getElementById('dynamic-admin-actions');
       const authButtonsContainer = document.getElementById('auth-buttons-container');
       const operatorSection = document.getElementById('operator-integrants-section');
+      const kpiSection = document.getElementById('kpi-section');
 
       dynamicAdminContainer.innerHTML = '';
       authButtonsContainer.innerHTML = '';
 
       if (currentUserRole === 'admin' || currentUserRole === 'operator') {
         operatorSection.classList.remove('hidden');
+        kpiSection.classList.remove('hidden'); // MOSTRAR KPIS A OPERATORS Y ADMINS
 
         if (currentUserRole === 'admin') {
           const btnReset = document.createElement('button');
@@ -565,6 +564,7 @@
         authButtonsContainer.appendChild(btnLogout);
       } else {
         operatorSection.classList.add('hidden');
+        kpiSection.classList.add('hidden'); // OCULTAR KPIS EN VISTA DE INVITADOS
 
         const btnLogin = document.createElement('button');
         btnLogin.className = 'flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs sm:text-sm px-3 py-2 rounded-lg shadow-lg transition font-cinzel';
