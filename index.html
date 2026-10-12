@@ -11,6 +11,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- LIBRERÍAS JSPDF Y AUTOTABLE PARA DESCARGAR PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
   <script>
     tailwind.config = {
@@ -81,12 +84,6 @@
       background: linear-gradient(180deg, #111827 0%, #000000 100%);
       border-bottom: 3px solid #eab308;
       box-shadow: 0 10px 25px -5px rgba(234, 179, 8, 0.3);
-    }
-
-    @media print {
-      body { background: white !important; color: black !important; }
-      header, #guest-checkout-bar, #pending-queue-section, #operator-integrants-section, .no-print { display: none !important; }
-      #printable-report { display: block !important; }
     }
   </style>
 </head>
@@ -160,8 +157,8 @@
           <button id="btn-export-integrants" class="bg-slate-800 hover:bg-slate-700 text-amber-200 text-xs font-bold px-3 py-2 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
             <i data-lucide="download" class="w-4 h-4"></i> Exportar Integrantes
           </button>
-          <button id="btn-open-print-report" class="bg-slate-800 hover:bg-slate-700 text-amber-200 text-xs font-bold px-3 py-2 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
-            <i data-lucide="printer" class="w-4 h-4"></i> Imprimir Reporte
+          <button id="btn-download-pdf-report" class="bg-amber-700 hover:bg-amber-600 text-slate-950 font-bold text-xs px-3 py-2 rounded-lg border border-amber-500 transition flex items-center gap-1.5 shadow-md">
+            <i data-lucide="file-text" class="w-4 h-4"></i> Descargar Reporte en PDF
           </button>
         </div>
       </div>
@@ -317,14 +314,6 @@
         </button>
       </form>
     </div>
-  </div>
-
-  <!-- VISTA DE IMPRESIÓN -->
-  <div id="printable-report" class="hidden p-8 bg-white text-slate-900">
-    <div class="text-center border-b-2 border-slate-300 pb-4 mb-6">
-      <h1 class="text-2xl font-bold uppercase tracking-wide font-cinzel">Reporte Oficial de Asignación de Integrantes</h1>
-    </div>
-    <div id="print-report-content" class="space-y-4"></div>
   </div>
 
   <script type="module">
@@ -547,7 +536,7 @@
 
       if (currentUserRole === 'admin' || currentUserRole === 'operator') {
         operatorSection.classList.remove('hidden');
-        kpiSection.classList.remove('hidden'); // MOSTRAR KPIS A OPERATORS Y ADMINS
+        kpiSection.classList.remove('hidden');
 
         if (currentUserRole === 'admin') {
           const btnReset = document.createElement('button');
@@ -564,7 +553,7 @@
         authButtonsContainer.appendChild(btnLogout);
       } else {
         operatorSection.classList.add('hidden');
-        kpiSection.classList.add('hidden'); // OCULTAR KPIS EN VISTA DE INVITADOS
+        kpiSection.classList.add('hidden');
 
         const btnLogin = document.createElement('button');
         btnLogin.className = 'flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs sm:text-sm px-3 py-2 rounded-lg shadow-lg transition font-cinzel';
@@ -656,8 +645,8 @@
           const dni = document.getElementById('op-integrant-dni').value.trim();
           const seatsArray = Array.from(operatorSelectedSeats).sort((a, b) => a - b);
 
-          if (!name) { alert("Ingresa el nombre del integrante."); return; }
-          if (seatsArray.length === 0) { alert("Selecciona al menos un asiento."); return; }
+          if (!name) { alert("Ingresa el integrante."); return; }
+          if (seatsArray.length === 0) { alert("Selecciona butacas."); return; }
 
           seatsArray.forEach(sNum => {
             seatsData[sNum] = {
@@ -679,7 +668,7 @@
             updateOperatorSeatsDisplay();
             renderAllGrids();
           } catch (err) {
-            alert("Error al guardar en la base de datos.");
+            alert("Error al guardar.");
           }
         });
       }
@@ -703,15 +692,38 @@
         const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "integrantes_asientos.csv"; link.click();
       });
 
-      document.getElementById('btn-open-print-report').addEventListener('click', () => {
-        const contentContainer = document.getElementById('print-report-content');
-        let html = `<table style="width:100%; border-collapse: collapse; font-size: 12px;"><thead><tr style="border-bottom: 2px solid #333; background: #f1f5f9;"><th style="padding: 8px;">Integrante</th><th style="padding: 8px;">DNI</th><th style="padding: 8px;">Asientos</th><th style="padding: 8px;">Monto Total</th></tr></thead><tbody>`;
-        integrantsList.forEach(item => {
-          html += `<tr style="border-bottom: 1px solid #cbd5e1;"><td style="padding: 8px; font-weight: bold;">${item.name}</td><td style="padding: 8px;">${item.dni || 'N/A'}</td><td style="padding: 8px;">${(item.seats || []).map(s => `#${s}`).join(', ')}</td><td style="padding: 8px;">S/ ${calculateTotalAmount(item.seats)}.00</td></tr>`;
+      // GENERACIÓN Y DESCARGAR REPORTE EN PDF CON JSPDF
+      document.getElementById('btn-download-pdf-report').addEventListener('click', () => {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+
+        // Encabezado del documento
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.setTextColor(180, 83, 9); // Color ámbar/dorado
+        doc.text("CONCIERTO DE LA SINFÓNICA DE CHICLAYO", 14, 20);
+
+        doc.setFontSize(11);
+        doc.setTextColor(100, 100, 100);
+        doc.text("Reporte Oficial de Asignación de Integrantes y Butacas", 14, 28);
+
+        const tableData = integrantsList.map(item => [
+          item.name,
+          item.dni || 'N/A',
+          (item.seats || []).map(s => `#${s}`).join(', '),
+          `S/ ${calculateTotalAmount(item.seats)}.00`
+        ]);
+
+        doc.autoTable({
+          startY: 35,
+          head: [['Integrante', 'DNI / Contacto', 'Asientos Asignados', 'Monto Total']],
+          body: tableData,
+          headStyles: { fillColor: [180, 83, 9], textColor: [255, 255, 255], fontStyle: 'bold' },
+          styles: { fontSize: 10, cellPadding: 4 },
+          alternateRowStyles: { fillColor: [245, 247, 250] }
         });
-        html += `</tbody></table>`;
-        contentContainer.innerHTML = html;
-        window.print();
+
+        doc.save("reporte_integrantes_sinfonica.pdf");
       });
 
       document.getElementById('btn-download-map').addEventListener('click', () => {
