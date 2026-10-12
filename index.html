@@ -37,7 +37,7 @@
       .seat-grid-11, .seat-grid-14 { gap: 1.5px; }
     }
 
-    /* ESTILOS DE BUTACAS OPTIMIZADOS PARA CORTA VISIÓN */
+    /* TAMAÑO DE LETRA NORMAL RESTAURADO */
     .seat-btn {
       aspect-ratio: 1;
       font-size: 8.5px;
@@ -52,7 +52,7 @@
       box-shadow: 0 1px 2px rgba(0,0,0,0.3);
     }
 
-    .seat-available { background-color: #fdfbf7; color: #000000; border: 1px solid #d4c5b9; }
+    .seat-available { background-color: #fdfbf7; color: #1a1a1a; border: 1px solid #d4c5b9; }
     .seat-available:hover { background-color: #fff; transform: scale(1.35); z-index: 50; border-color: #eab308; }
     .seat-platinum { background-color: #7f1d1d; color: #fef08a; border: 1px solid #991b1b; }
     .seat-platinum:hover { background-color: #991b1b; transform: scale(1.35); z-index: 50; }
@@ -494,7 +494,6 @@
           </div>
         `;
 
-        // BOTÓN EDITAR INTEGRANTE
         card.querySelector('.btn-edit-integrant').addEventListener('click', (e) => {
           e.stopPropagation();
           startEditingIntegrant(item);
@@ -538,15 +537,9 @@
       document.getElementById('op-integrant-name').value = item.name;
       document.getElementById('op-integrant-dni').value = item.dni || '';
 
-      // Temporariamente liberar asientos originales del mapa visual
-      editingOriginalSeats.forEach(sNum => {
-        delete seatsData[sNum];
-      });
-
       operatorSelectedSeats = new Set(editingOriginalSeats);
       updateOperatorSeatsDisplay();
 
-      // Ajustar interfaz para modo edición
       document.getElementById('btn-save-text').innerText = "Guardar Cambios";
       document.getElementById('btn-cancel-edit').classList.remove('hidden');
 
@@ -555,20 +548,6 @@
     }
 
     function cancelEditingIntegrant() {
-      if (editingIntegrantId && editingOriginalSeats.length > 0) {
-        const item = integrantsList.find(i => i.id === editingIntegrantId);
-        if (item) {
-          editingOriginalSeats.forEach(sNum => {
-            seatsData[sNum] = {
-              status: 'reservado',
-              clientName: item.name,
-              clientDni: item.dni,
-              updatedAt: item.updatedAt || new Date().toISOString()
-            };
-          });
-        }
-      }
-
       editingIntegrantId = null;
       editingOriginalSeats = [];
       operatorSelectedSeats.clear();
@@ -714,6 +693,16 @@
           if (!name) { alert("Ingresa el integrante."); return; }
           if (seatsArray.length === 0) { alert("Selecciona al menos una butaca."); return; }
 
+          // CORRECCIÓN CLAVE: Si estamos editando, liberar explícitamente los asientos antiguos que ya no se seleccionaron
+          if (editingIntegrantId) {
+            editingOriginalSeats.forEach(sNum => {
+              if (!seatsArray.includes(sNum)) {
+                delete seatsData[sNum];
+              }
+            });
+          }
+
+          // Asignar los nuevos asientos seleccionados
           seatsArray.forEach(sNum => {
             seatsData[sNum] = {
               status: 'reservado',
@@ -728,7 +717,7 @@
             
             if (editingIntegrantId) {
               await setDoc(doc(db, 'integrants', editingIntegrantId), { name, dni, seats: seatsArray, updatedAt: new Date().toISOString() }, { merge: true });
-              alert(`¡Integrantes y asientos actualizados correctamente para ${name}!`);
+              alert(`¡Asientos actualizados correctamente para ${name}!`);
             } else {
               await addDoc(collection(db, 'integrants'), { name, dni, seats: seatsArray, updatedAt: new Date().toISOString() });
               alert(`¡Asignación exitosa para ${name}!`);
