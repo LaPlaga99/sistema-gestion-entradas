@@ -326,92 +326,9 @@
     let operatorSelectedSeats = new Set();
     let currentHighlightedIntegrantId = null;
     let highlightedIntegrantSeats = new Set();
-    let isFirebaseActive = false;
     let db = null;
     let auth = null;
     let currentUserRole = 'guest';
-
-    async function initFirebase() {
-      try {
-        const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
-
-        onAuthStateChanged(auth, async (user) => {
-          const syncText = document.getElementById('sync-status-text');
-          const syncIndicator = document.getElementById('sync-status-indicator');
-
-          if (user) {
-            isFirebaseActive = true;
-            currentUserRole = (user.email === 'ronaldoeliasv@gmail.com') ? 'admin' : 'operator';
-            if (syncText) syncText.innerText = `${currentUserRole.toUpperCase()}: ${user.email}`;
-            if (syncIndicator) syncIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
-          } else {
-            isFirebaseActive = true;
-            currentUserRole = 'guest';
-            if (syncText) syncText.innerText = "Vista Pública (Invitado)";
-            if (syncIndicator) syncIndicator.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
-          }
-
-          renderAuthControls();
-
-          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'seating_map'), (docSnap) => {
-            seatsData = docSnap.exists() ? (docSnap.data().seats || {}) : {};
-            renderAllGrids();
-            updateKPIs();
-          });
-
-          onSnapshot(collection(db, 'integrants'), (querySnap) => {
-            integrantsList = [];
-            querySnap.forEach((docSnap) => {
-              integrantsList.push({ id: docSnap.id, ...docSnap.data() });
-            });
-            renderIntegrantsList();
-            renderAllGrids();
-          });
-        });
-      } catch (err) {
-        console.warn("Error Firebase:", err);
-      }
-    }
-
-    function renderAuthControls() {
-      const dynamicAdminContainer = document.getElementById('dynamic-admin-actions');
-      const authButtonsContainer = document.getElementById('auth-buttons-container');
-      const operatorSection = document.getElementById('operator-integrants-section');
-
-      dynamicAdminContainer.innerHTML = '';
-      authButtonsContainer.innerHTML = '';
-
-      if (currentUserRole === 'admin' || currentUserRole === 'operator') {
-        operatorSection.classList.remove('hidden');
-
-        if (currentUserRole === 'admin') {
-          const btnReset = document.createElement('button');
-          btnReset.className = 'flex items-center gap-2 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg border border-rose-800/60 transition';
-          btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i><span>Reiniciar Mapa</span>`;
-          btnReset.addEventListener('click', resetSeatingMap);
-          dynamicAdminContainer.appendChild(btnReset);
-        }
-
-        const btnLogout = document.createElement('button');
-        btnLogout.className = 'flex items-center gap-2 bg-slate-800 hover:bg-red-900/50 text-slate-300 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg border border-slate-700 transition';
-        btnLogout.innerHTML = `<i data-lucide="log-out" class="w-4 h-4"></i><span>Salir</span>`;
-        btnLogout.addEventListener('click', () => signOut(auth));
-        authButtonsContainer.appendChild(btnLogout);
-      } else {
-        operatorSection.classList.add('hidden');
-
-        const btnLogin = document.createElement('button');
-        btnLogin.className = 'flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs sm:text-sm px-3 py-2 rounded-lg shadow-lg transition font-cinzel';
-        btnLogin.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4"></i><span>Acceso Autorizado</span>`;
-        btnLogin.addEventListener('click', () => {
-          document.getElementById('login-modal').classList.remove('hidden');
-        });
-        authButtonsContainer.appendChild(btnLogin);
-      }
-      if (window.lucide) lucide.createIcons();
-    }
 
     function getSeatZone(seatNum) {
       for (const [gridId, zone] of Object.entries(ZONE_CONFIG)) {
@@ -429,11 +346,75 @@
       return total;
     }
 
+    // RENDERIZADO INMEDIATO DE LAS REJILLAS PARA GARANTIZAR LOS ASIENTOS DESDE EL INICIO
+    function renderAllGrids() {
+      const searchInput = document.getElementById('search-input');
+      const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
+      for (const [gridId, zone] of Object.entries(ZONE_CONFIG)) {
+        const container = document.getElementById(gridId);
+        if (!container) continue;
+        container.innerHTML = '';
+        const fragment = document.createDocumentFragment();
+
+        for (let i = zone.start; i <= zone.end; i++) {
+          const seatInfo = seatsData[i] || { status: 'disponible' };
+          const status = seatInfo.status || 'disponible';
+          const seatOwner = (seatInfo.clientName || '').toLowerCase();
+
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.innerText = i;
+
+          if (searchTerm) {
+            const matchesSeatNum = i.toString().includes(searchTerm);
+            const matchesOwner = seatOwner.includes(searchTerm);
+            btn.style.opacity = (matchesSeatNum || matchesOwner) ? '1' : '0.15';
+          } else {
+            btn.style.opacity = '1';
+          }
+
+          let colorClasses = '';
+          if (highlightedIntegrantSeats.has(i)) {
+            colorClasses = 'seat-highlighted';
+          } else if (operatorSelectedSeats.has(i)) {
+            colorClasses = 'seat-selected';
+          } else if (status === 'reservado') {
+            colorClasses = 'seat-reserved';
+          } else {
+            colorClasses = (zone.name === 'PLATINUM') ? 'seat-platinum' : 'seat-available';
+          }
+
+          btn.className = `seat-btn ${colorClasses}`;
+
+          btn.addEventListener('click', () => {
+            if (currentUserRole === 'admin' || currentUserRole === 'operator') {
+              if (status === 'reservado' && !operatorSelectedSeats.has(i)) {
+                alert(`⚠️ Este asiento #${i} ya está asignado a: ${seatInfo.clientName || 'Otro usuario'}`);
+                return;
+              }
+              if (operatorSelectedSeats.has(i)) {
+                operatorSelectedSeats.delete(i);
+              } else {
+                operatorSelectedSeats.add(i);
+              }
+              updateOperatorSeatsDisplay();
+              renderAllGrids();
+            }
+          });
+          fragment.appendChild(btn);
+        }
+        container.appendChild(fragment);
+      }
+    }
+
     function renderIntegrantsList() {
       const container = document.getElementById('integrants-list-container');
       if (!container) return;
 
-      const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
+      const searchInput = document.getElementById('search-input');
+      const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
+
       const filtered = integrantsList.filter(item => {
         if (!searchTerm) return true;
         const matchesName = item.name.toLowerCase().includes(searchTerm);
@@ -509,7 +490,91 @@
       display.value = sorted.length > 0 ? sorted.map(s => `#${s}`).join(', ') : '';
     }
 
+    function renderAuthControls() {
+      const dynamicAdminContainer = document.getElementById('dynamic-admin-actions');
+      const authButtonsContainer = document.getElementById('auth-buttons-container');
+      const operatorSection = document.getElementById('operator-integrants-section');
+
+      dynamicAdminContainer.innerHTML = '';
+      authButtonsContainer.innerHTML = '';
+
+      if (currentUserRole === 'admin' || currentUserRole === 'operator') {
+        operatorSection.classList.remove('hidden');
+
+        if (currentUserRole === 'admin') {
+          const btnReset = document.createElement('button');
+          btnReset.className = 'flex items-center gap-2 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg border border-rose-800/60 transition';
+          btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i><span>Reiniciar Mapa</span>`;
+          btnReset.addEventListener('click', resetSeatingMap);
+          dynamicAdminContainer.appendChild(btnReset);
+        }
+
+        const btnLogout = document.createElement('button');
+        btnLogout.className = 'flex items-center gap-2 bg-slate-800 hover:bg-red-900/50 text-slate-300 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg border border-slate-700 transition';
+        btnLogout.innerHTML = `<i data-lucide="log-out" class="w-4 h-4"></i><span>Salir</span>`;
+        btnLogout.addEventListener('click', () => signOut(auth));
+        authButtonsContainer.appendChild(btnLogout);
+      } else {
+        operatorSection.classList.add('hidden');
+
+        const btnLogin = document.createElement('button');
+        btnLogin.className = 'flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs sm:text-sm px-3 py-2 rounded-lg shadow-lg transition font-cinzel';
+        btnLogin.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4"></i><span>Acceso Autorizado</span>`;
+        btnLogin.addEventListener('click', () => {
+          document.getElementById('login-modal').classList.remove('hidden');
+        });
+        authButtonsContainer.appendChild(btnLogin);
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    async function initFirebase() {
+      try {
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        onAuthStateChanged(auth, async (user) => {
+          const syncText = document.getElementById('sync-status-text');
+          const syncIndicator = document.getElementById('sync-status-indicator');
+
+          if (user) {
+            currentUserRole = (user.email === 'ronaldoeliasv@gmail.com') ? 'admin' : 'operator';
+            if (syncText) syncText.innerText = `${currentUserRole.toUpperCase()}: ${user.email}`;
+            if (syncIndicator) syncIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+          } else {
+            currentUserRole = 'guest';
+            if (syncText) syncText.innerText = "Vista Pública (Invitado)";
+            if (syncIndicator) syncIndicator.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
+          }
+
+          renderAuthControls();
+
+          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'seating_map'), (docSnap) => {
+            seatsData = docSnap.exists() ? (docSnap.data().seats || {}) : {};
+            renderAllGrids();
+            updateKPIs();
+          });
+
+          onSnapshot(collection(db, 'integrants'), (querySnap) => {
+            integrantsList = [];
+            querySnap.forEach((docSnap) => {
+              integrantsList.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            renderIntegrantsList();
+            renderAllGrids();
+          });
+        });
+      } catch (err) {
+        console.warn("Error Firebase:", err);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
+      // DIBUJAR MAPA Y COMPONENTES DE INMEDIATO EN LA CARGA DE PÁGINA
+      renderAllGrids();
+      renderAuthControls();
+
       document.getElementById('close-login-modal').addEventListener('click', () => {
         document.getElementById('login-modal').classList.add('hidden');
       });
@@ -575,8 +640,6 @@
         renderIntegrantsList();
         renderAllGrids();
       });
-      document.getElementById('filter-status').addEventListener('change', renderAllGrids);
-      document.getElementById('filter-zone').addEventListener('change', renderAllGrids);
 
       document.getElementById('btn-export-integrants').addEventListener('click', () => {
         const headers = ["Nombre", "DNI", "Asientos", "Monto_Total"];
@@ -595,81 +658,19 @@
         integrantsList.forEach(item => {
           html += `<tr style="border-bottom: 1px solid #cbd5e1;"><td style="padding: 8px; font-weight: bold;">${item.name}</td><td style="padding: 8px;">${item.dni || 'N/A'}</td><td style="padding: 8px;">${(item.seats || []).map(s => `#${s}`).join(', ')}</td><td style="padding: 8px;">S/ ${calculateTotalAmount(item.seats)}.00</td></tr>`;
         });
-        html += `</tbody></table>`;
+        html += `</tbody>mtable>`;
         contentContainer.innerHTML = html;
         window.print();
       });
+
+      document.getElementById('btn-download-map').addEventListener('click', () => {
+        html2canvas(document.getElementById('full-map-container'), { scale: 2, backgroundColor: '#020617' }).then(canvas => {
+          const link = document.createElement('a'); link.download = 'mapa_asientos_sinfonica.png'; link.href = canvas.toDataURL(); link.click();
+        });
+      });
+
+      initFirebase();
     });
-
-    function renderAllGrids() {
-      const searchTerm = document.getElementById('search-input').value.trim().toLowerCase();
-      const statusFilter = document.getElementById('filter-status').value;
-      const zoneFilter = document.getElementById('filter-zone').value;
-
-      for (const [gridId, zone] of Object.entries(ZONE_CONFIG)) {
-        const container = document.getElementById(gridId);
-        if (!container) continue;
-        container.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-
-        for (let i = zone.start; i <= zone.end; i++) {
-          const seatInfo = seatsData[i] || { status: 'disponible' };
-          const status = seatInfo.status || 'disponible';
-          const seatOwner = (seatInfo.clientName || '').toLowerCase();
-
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.innerText = i;
-
-          if (zoneFilter !== 'ALL' && zone.name !== zoneFilter) { btn.style.display = 'none'; continue; }
-          if (statusFilter !== 'all' && status !== statusFilter) { btn.style.display = 'none'; continue; }
-
-          // Búsqueda dinámica en el mapa
-          if (searchTerm) {
-            const matchesSeatNum = i.toString().includes(searchTerm);
-            const matchesOwner = seatOwner.includes(searchTerm);
-            if (!matchesSeatNum && !matchesOwner) {
-              btn.style.opacity = '0.15';
-            } else {
-              btn.style.opacity = '1';
-            }
-          } else {
-            btn.style.opacity = '1';
-          }
-
-          let colorClasses = '';
-          if (highlightedIntegrantSeats.has(i)) {
-            colorClasses = 'seat-highlighted';
-          } else if (operatorSelectedSeats.has(i)) {
-            colorClasses = 'seat-selected';
-          } else if (status === 'reservado') {
-            colorClasses = 'seat-reserved';
-          } else {
-            colorClasses = (zone.name === 'PLATINUM') ? 'seat-platinum' : 'seat-available';
-          }
-
-          btn.className = `seat-btn ${colorClasses}`;
-
-          btn.addEventListener('click', () => {
-            if (currentUserRole === 'admin' || currentUserRole === 'operator') {
-              if (status === 'reservado' && !operatorSelectedSeats.has(i)) {
-                alert(`⚠️ Este asiento #${i} ya está asignado a: ${seatInfo.clientName || 'Otro usuario'}`);
-                return;
-              }
-              if (operatorSelectedSeats.has(i)) {
-                operatorSelectedSeats.delete(i);
-              } else {
-                operatorSelectedSeats.add(i);
-              }
-              updateOperatorSeatsDisplay();
-              renderAllGrids();
-            }
-          });
-          fragment.appendChild(btn);
-        }
-        container.appendChild(fragment);
-      }
-    }
 
     async function resetSeatingMap() {
       if (!confirm("⚠️ ¿Reiniciar TODO el mapa y borrar todos los integrantes?")) return;
@@ -704,8 +705,6 @@
       document.getElementById('kpi-reserved').innerText = reserved;
       document.getElementById('kpi-reserved-val').innerText = `S/ ${val.toLocaleString('es-PE')} recaudados`;
     }
-
-    initFirebase();
   </script>
 </body>
 </html>
