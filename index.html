@@ -37,7 +37,6 @@
       .seat-grid-11, .seat-grid-14 { gap: 1.5px; }
     }
 
-    /* TAMAÑO DE LETRA NORMAL */
     .seat-btn {
       aspect-ratio: 1;
       font-size: 8.5px;
@@ -144,6 +143,7 @@
       <div class="bg-slate-900/90 border border-amber-600/30 p-3 sm:p-4 rounded-xl shadow-sm">
         <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">Disponibles<i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i></div>
         <div class="text-xl sm:text-2xl font-bold text-emerald-400 mt-1" id="kpi-available">792</div>
+        <div class="text-[10px] text-sky-400 mt-0.5" id="kpi-assigned-sub">0 asignados pendientes</div>
       </div>
       <div class="bg-slate-900/90 border border-amber-600/30 p-3 sm:p-4 rounded-xl shadow-sm">
         <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">Reservados (Pagados)<i data-lucide="clock" class="w-4 h-4 text-amber-400"></i></div>
@@ -341,7 +341,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, collection, onSnapshot, setDoc, addDoc, deleteDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, collection, onSnapshot, setDoc, updateDoc, getDoc, deleteDoc, getDocs, writeBatch, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const appId = 'event-tickets-admin-v1';
     
@@ -373,6 +373,10 @@
     let db = null;
     let auth = null;
     let currentUserRole = 'guest';
+
+    function getMapDocRef() {
+      return doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'seating_map');
+    }
 
     function getSeatZone(seatNum) {
       for (const [gridId, zone] of Object.entries(ZONE_CONFIG)) {
@@ -417,7 +421,6 @@
           let seatOwner = '';
 
           if (rawSeatInfo) {
-            // Si es invitado y el estado es 'asignado', lo tratamos visualmente como 'disponible'
             if (currentUserRole === 'guest' && rawSeatInfo.status === 'asignado') {
               status = 'disponible';
             } else {
@@ -547,12 +550,25 @@
         card.querySelector('.btn-delete-integrant').addEventListener('click', async (e) => {
           e.stopPropagation();
           if (confirm(`¿Eliminar al integrante ${item.name}?`)) {
-            for (const sNum of seats) { delete seatsData[sNum]; }
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'seating_map'), { seats: seatsData });
-            await deleteDoc(doc(db, 'integrants', item.id));
-            if (currentHighlightedIntegrantId === item.id) {
-              currentHighlightedIntegrantId = null;
-              highlightedIntegrantSeats.clear();
+            try {
+              const batch = writeBatch(db);
+              const atomicUpdates = {};
+              for (const sNum of seats) {
+                atomicUpdates[`seats.${sNum}`] = deleteField();
+              }
+              if (Object.keys(atomicUpdates).length > 0) {
+                batch.update(getMapDocRef(), atomicUpdates);
+              }
+              batch.delete(doc(db, 'integrants', item.id));
+              await batch.commit();
+
+              if (currentHighlightedIntegrantId === item.id) {
+                currentHighlightedIntegrantId = null;
+                highlightedIntegrantSeats.clear();
+              }
+            } catch (err) {
+              console.error("Error eliminando integrante:", err);
+              alert("Error de permisos o conexión al eliminar.");
             }
           }
         });
@@ -640,42 +656,71 @@
       if (window.lucide) lucide.createIcons();
     }
 
+    let unsubscribeIntegrants = null;
+
     async function initFirebase() {
       try {
         const app = initializeApp(firebaseConfig);
         auth = getAuth(app);
         db = getFirestore(app);
 
+        // Escuchar mapa público en tiempo real
+        onSnapshot(getMapDocRef(), (docSnap) => {
+          seatsData = docSnap.exists() ? (docSnap.data().seats || {}) : {};
+          renderAllGrids();
+          updateKPIs();
+        });
+
         onAuthStateChanged(auth, async (user) => {
           const syncText = document.getElementById('sync-status-text');
           const syncIndicator = document.getElementById('sync-status-indicator');
 
+          // Limpiar listener previo de integrantes si existía
+          if (unsubscribeIntegrants) {
+            unsubscribeIntegrants();
+            unsubscribeIntegrants = null;
+          }
+
           if (user) {
-            currentUserRole = (user.email === 'ronaldoeliasv@gmail.com') ? 'admin' : 'operator';
-            if (syncText) syncText.innerText = `${currentUserRole.toUpperCase()}: ${user.email}`;
-            if (syncIndicator) syncIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+            // Consulta segura y dinámica de rol en Firestore (/users/{uid})
+            try {
+              const userSnap = await getDoc(doc(db, 'users', user.uid));
+              if (userSnap.exists() && userSnap.data().role) {
+                currentUserRole = userSnap.data().role;
+              } else {
+                currentUserRole = 'guest';
+              }
+            } catch (err) {
+              console.error("Error validando rol:", err);
+              currentUserRole = 'guest';
+            }
+
+            if (currentUserRole === 'admin' || currentUserRole === 'operator') {
+              if (syncText) syncText.innerText = `${currentUserRole.toUpperCase()}: ${user.email}`;
+              if (syncIndicator) syncIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+
+              // Suscribirse a la lista privada de integrantes solo si es staff
+              unsubscribeIntegrants = onSnapshot(collection(db, 'integrants'), (querySnap) => {
+                integrantsList = [];
+                querySnap.forEach((docSnap) => {
+                  integrantsList.push({ id: docSnap.id, ...docSnap.data() });
+                });
+                renderIntegrantsList();
+                renderAllGrids();
+              });
+            } else {
+              if (syncText) syncText.innerText = "Usuario sin rol autorizado";
+              if (syncIndicator) syncIndicator.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+            }
           } else {
             currentUserRole = 'guest';
+            integrantsList = [];
             if (syncText) syncText.innerText = "Vista Pública (Invitado)";
             if (syncIndicator) syncIndicator.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
           }
 
           renderAuthControls();
-
-          onSnapshot(doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'seating_map'), (docSnap) => {
-            seatsData = docSnap.exists() ? (docSnap.data().seats || {}) : {};
-            renderAllGrids();
-            updateKPIs();
-          });
-
-          onSnapshot(collection(db, 'integrants'), (querySnap) => {
-            integrantsList = [];
-            querySnap.forEach((docSnap) => {
-              integrantsList.push({ id: docSnap.id, ...docSnap.data() });
-            });
-            renderIntegrantsList();
-            renderAllGrids();
-          });
+          renderAllGrids();
         });
       } catch (err) {
         console.warn("Error Firebase:", err);
@@ -725,18 +770,22 @@
           if (!name) { alert("Ingresa el integrante."); return; }
           if (seatsArray.length === 0) { alert("Selecciona al menos una butaca."); return; }
 
-          for (let sNum = 1; sNum <= 792; sNum++) {
-            if (seatsData[sNum] && (
-              (editingIntegrantId && seatsData[sNum].integrantId === editingIntegrantId) ||
-              (seatsData[sNum].clientName && seatsData[sNum].clientName.toLowerCase() === name.toLowerCase())
+          const targetId = editingIntegrantId || ('int_' + Date.now());
+          const atomicMapUpdates = {};
+
+          // 1. Limpiar atómicamente solo los asientos previos que pertenecían a este integrante
+          for (const [sNum, sInfo] of Object.entries(seatsData)) {
+            if (sInfo && (
+              (editingIntegrantId && sInfo.integrantId === editingIntegrantId) ||
+              (sInfo.clientName && sInfo.clientName.toLowerCase() === name.toLowerCase())
             )) {
-              delete seatsData[sNum];
+              atomicMapUpdates[`seats.${sNum}`] = deleteField();
             }
           }
 
-          const targetId = editingIntegrantId || ('int_' + Date.now());
+          // 2. Asignar atómicamente los nuevos asientos seleccionados
           seatsArray.forEach(sNum => {
-            seatsData[sNum] = {
+            atomicMapUpdates[`seats.${sNum}`] = {
               status: seatStatus,
               clientName: name,
               clientDni: dni,
@@ -746,15 +795,24 @@
           });
 
           try {
-            await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'seating_map'), { seats: seatsData });
-            
-            if (editingIntegrantId) {
-              await setDoc(doc(db, 'integrants', editingIntegrantId), { name, dni, seatStatus, seats: seatsArray, updatedAt: new Date().toISOString() }, { merge: true });
-              alert(`¡Asientos actualizados correctamente para ${name}!`);
-            } else {
-              await setDoc(doc(db, 'integrants', targetId), { name, dni, seatStatus, seats: seatsArray, updatedAt: new Date().toISOString() });
-              alert(`¡Asignación exitosa para ${name}!`);
-            }
+            const batch = writeBatch(db);
+            batch.update(getMapDocRef(), atomicMapUpdates);
+
+            const integrantRef = doc(db, 'integrants', targetId);
+            batch.set(integrantRef, {
+              name,
+              dni,
+              seatStatus,
+              seats: seatsArray,
+              updatedAt: new Date().toISOString()
+            }, { merge: true });
+
+            await batch.commit();
+
+            alert(editingIntegrantId 
+              ? `¡Asientos actualizados correctamente para ${name}!` 
+              : `¡Asignación exitosa para ${name}!`
+            );
 
             editingIntegrantId = null;
             operatorSelectedSeats.clear();
@@ -768,7 +826,8 @@
             updateOperatorSeatsDisplay();
             renderAllGrids();
           } catch (err) {
-            alert("Error al guardar en la base de datos.");
+            console.error("Error guardando asignación atómica:", err);
+            alert("Error al guardar en la base de datos. Verifica tus permisos o si el mapa inicial existe.");
           }
         });
       }
@@ -840,11 +899,9 @@
         const batch = writeBatch(db);
         const integrantsSnap = await getDocs(collection(db, 'integrants'));
         integrantsSnap.forEach((d) => batch.delete(d.ref));
-        await batch.commit();
 
-        const emptySeats = {};
-        for (let i = 1; i <= 792; i++) { emptySeats[i] = { status: 'disponible' }; }
-        await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'seating_map'), { seats: emptySeats });
+        batch.set(getMapDocRef(), { seats: {} });
+        await batch.commit();
         
         operatorSelectedSeats.clear();
         highlightedIntegrantSeats.clear();
@@ -852,19 +909,27 @@
         editingIntegrantId = null;
         alert("¡Mapa e integrantes reiniciados!");
       } catch (err) {
-        alert("Error al reiniciar.");
+        console.error("Error al reiniciar:", err);
+        alert("Error al reiniciar. Solo el administrador principal puede ejecutar esta acción.");
       }
     }
 
     function updateKPIs() {
-      let available = 0, reserved = 0, val = 0;
+      let available = 0, assigned = 0, reserved = 0, val = 0;
       for (let i = 1; i <= 792; i++) {
         const zone = getSeatZone(i);
         const seat = seatsData[i] || { status: 'disponible' };
-        if (seat.status === 'reservado') { reserved++; val += zone ? zone.price : 0; }
-        else { available++; }
+        if (seat.status === 'reservado') {
+          reserved++;
+          val += zone ? zone.price : 0;
+        } else if (seat.status === 'asignado') {
+          assigned++;
+        } else {
+          available++;
+        }
       }
       document.getElementById('kpi-available').innerText = available;
+      document.getElementById('kpi-assigned-sub').innerText = `${assigned} asignados pendientes`;
       document.getElementById('kpi-reserved').innerText = reserved;
       document.getElementById('kpi-reserved-val').innerText = `S/ ${val.toLocaleString('es-PE')} recaudados`;
     }
