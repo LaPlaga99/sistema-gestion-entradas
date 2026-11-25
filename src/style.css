@@ -1,0 +1,76 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Inter', sans-serif;
+  --font-serif: 'Cinzel', Georgia, serif;
+}
+
+.font-cinzel { font-family: 'Cinzel', Georgia, serif; }
+.seat-grid-11 { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 3px; }
+.seat-grid-14 { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 3px; }
+
+@media (max-width: 640px) {
+  .seat-grid-11, .seat-grid-14 { gap: 1.5px; }
+}
+
+.seat-btn {
+  aspect-ratio: 1;
+  font-size: 8.5px;
+  font-weight: 800;
+  font-family: 'Cinzel', Georgia, serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  transition: all 0.15s ease-in-out;
+  user-select: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.seat-available { background-color: #fdfbf7; color: #1a1a1a; border: 1px solid #d4c5b9; }
+.seat-available:hover { background-color: #fff; transform: scale(1.35); z-index: 50; border-color: #eab308; }
+.seat-platinum { background-color: #7f1d1d; color: #fef08a; border: 1px solid #991b1b; }
+.seat-platinum:hover { background-color: #991b1b; transform: scale(1.35); z-index: 50; }
+
+.seat-selected {
+  background-color: #4f46e5 !important;
+  color: #ffffff !important;
+  border: 2px solid #818cf8 !important;
+  transform: scale(1.15);
+  z-index: 40;
+}
+
+.seat-assigned {
+  background-color: #0284c7 !important;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  border: 1.5px solid #38bdf8 !important;
+}
+
+.seat-reserved {
+  background-color: #eab308 !important;
+  color: #000000 !important;
+  font-weight: 900 !important;
+  border: 1.5px solid #fef08a !important;
+}
+
+.seat-highlighted {
+  background-color: #9333ea !important;
+  color: #ffffff !important;
+  border: 2px solid #c084fc !important;
+  transform: scale(1.25);
+  z-index: 45;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.9);
+}
+
+.stage-curtain-gold {
+  background: linear-gradient(180deg, #111827 0%, #000000 100%);
+  border-bottom: 3px solid #eab308;
+  box-shadow: 0 10px 25px -5px rgba(234, 179, 8, 0.3);
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.toast-enter { animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }

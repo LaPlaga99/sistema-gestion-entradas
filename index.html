@@ -4,104 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Distribución de Butacas - Sistema Multi-Evento</title>
-  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'sans-serif'],
-            serif: ['Cinzel', 'Georgia', 'serif'],
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    .font-cinzel { font-family: 'Cinzel', Georgia, serif; }
-    .seat-grid-11 { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 3px; }
-    .seat-grid-14 { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 3px; }
-
-    @media (max-width: 640px) {
-      .seat-grid-11, .seat-grid-14 { gap: 1.5px; }
-    }
-
-    .seat-btn {
-      aspect-ratio: 1;
-      font-size: 8.5px;
-      font-weight: 800;
-      font-family: 'Cinzel', Georgia, serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 2px;
-      transition: all 0.15s ease-in-out;
-      user-select: none;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.3);
-    }
-
-    .seat-available { background-color: #fdfbf7; color: #1a1a1a; border: 1px solid #d4c5b9; }
-    .seat-available:hover { background-color: #fff; transform: scale(1.35); z-index: 50; border-color: #eab308; }
-    .seat-platinum { background-color: #7f1d1d; color: #fef08a; border: 1px solid #991b1b; }
-    .seat-platinum:hover { background-color: #991b1b; transform: scale(1.35); z-index: 50; }
-    
-    .seat-selected {
-      background-color: #4f46e5 !important;
-      color: #ffffff !important;
-      border: 2px solid #818cf8 !important;
-      transform: scale(1.15);
-      z-index: 40;
-    }
-
-    .seat-assigned {
-      background-color: #0284c7 !important;
-      color: #ffffff !important;
-      font-weight: 900 !important;
-      border: 1.5px solid #38bdf8 !important;
-    }
-
-    .seat-reserved {
-      background-color: #eab308 !important;
-      color: #000000 !important;
-      font-weight: 900 !important;
-      border: 1.5px solid #fef08a !important;
-    }
-
-    .seat-highlighted {
-      background-color: #9333ea !important;
-      color: #ffffff !important;
-      border: 2px solid #c084fc !important;
-      transform: scale(1.25);
-      z-index: 45;
-      box-shadow: 0 0 12px rgba(168, 85, 247, 0.9);
-    }
-
-    .stage-curtain-gold {
-      background: linear-gradient(180deg, #111827 0%, #000000 100%);
-      border-bottom: 3px solid #eab308;
-      box-shadow: 0 10px 25px -5px rgba(234, 179, 8, 0.3);
-    }
-
-    @keyframes slideInRight {
-      from { transform: translateX(100%); opacity: 0; }
-      to { transform: translateX(0); opacity: 1; }
-    }
-    .toast-enter { animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-  </style>
 </head>
 <body class="h-full flex flex-col font-sans antialiased bg-slate-950 text-slate-100 pb-20">
 
-  <!-- ENCABEZADO -->
   <header class="bg-slate-900/90 border-b border-amber-600/40 sticky top-0 z-30 shadow-xl backdrop-blur-md">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-4">
       <div class="flex items-center space-x-3">
@@ -136,8 +44,6 @@
   </header>
 
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6 overflow-y-auto">
-
-    <!-- KPIS (SOLO VISIBLE PARA OPERATORS Y ADMINS) -->
     <section id="kpi-section" class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 hidden">
       <div class="bg-slate-900/90 border border-amber-600/30 p-3 sm:p-4 rounded-xl shadow-sm">
         <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">Total Asientos<i data-lucide="grid" class="w-4 h-4 text-amber-500/60"></i></div>
@@ -159,7 +65,6 @@
       </div>
     </section>
 
-    <!-- PANEL DE INTEGRANTES Y ASIGNACIÓN (SOLO OPERATORS Y ADMINS) -->
     <section id="operator-integrants-section" class="bg-slate-900 border border-amber-500/40 rounded-2xl p-4 space-y-4 hidden shadow-2xl">
       <div class="flex flex-wrap justify-between items-center gap-3 border-b border-slate-800 pb-3">
         <div class="flex items-center gap-2 text-amber-300 font-bold text-sm font-cinzel">
@@ -198,7 +103,7 @@
         </div>
         <div class="md:col-span-2 flex gap-2">
           <button id="btn-save-integrant-assignment" class="w-full bg-amber-600 hover:bg-amber-500 text-slate-950 font-black text-xs py-2 rounded-lg transition shadow-md flex items-center justify-center gap-1 font-cinzel">
-            <i data-lucide="user-plus" class="w-4 h-4" id="btn-save-icon"></i> <span id="btn-save-text">Asignar</span>
+            <i data-lucide="user-plus" class="w-4 h-4"></i> <span id="btn-save-text">Asignar</span>
           </button>
           <button id="btn-cancel-edit" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs px-2.5 py-2 rounded-lg border border-slate-700 transition hidden">
             Cancelar
@@ -214,7 +119,6 @@
       </div>
     </section>
 
-    <!-- LEYENDA Y FILTROS POR ZONA Y ESTADO -->
     <section class="bg-slate-900/90 border border-amber-600/30 rounded-xl p-4 flex flex-wrap justify-between items-center gap-4">
       <div class="flex items-center gap-3 flex-wrap text-xs sm:text-sm" id="legend-container">
         <span class="text-amber-400 font-semibold uppercase tracking-wider text-[11px] font-cinzel">Leyenda:</span>
@@ -240,7 +144,6 @@
       </div>
     </section>
 
-    <!-- MAPA -->
     <div id="full-map-container" class="p-4 sm:p-6 bg-slate-950 rounded-2xl border-2 border-amber-600/40 space-y-6 shadow-2xl">
       <div class="text-center space-y-1 py-2">
         <h2 id="map-heading-text" class="text-2xl sm:text-3xl font-black font-cinzel text-amber-300 uppercase tracking-wider">DISTRIBUCIÓN DE BUTACAS</h2>
@@ -305,10 +208,8 @@
     </div>
   </main>
 
-  <!-- CONTENEDOR DE NOTIFICACIONES TOAST -->
   <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
 
-  <!-- MODAL DE CONFIRMACIÓN PERSONALIZADO -->
   <div id="confirm-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm flex items-center justify-center z-50 p-4 hidden">
     <div class="bg-slate-900 border border-amber-500/40 rounded-2xl p-6 max-w-sm w-full shadow-2xl text-slate-100 space-y-4">
       <div class="flex items-start gap-3">
@@ -321,17 +222,12 @@
         </div>
       </div>
       <div class="flex justify-end gap-2.5 pt-2 border-t border-slate-800">
-        <button id="confirm-modal-cancel" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">
-          Cancelar
-        </button>
-        <button id="confirm-modal-accept" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow-lg transition">
-          Confirmar
-        </button>
+        <button id="confirm-modal-cancel" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">Cancelar</button>
+        <button id="confirm-modal-accept" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow-lg transition">Confirmar</button>
       </div>
     </div>
   </div>
 
-  <!-- MODAL DE CONFIGURACIÓN MULTI-EVENTO (SOLO ADMIN) -->
   <div id="event-config-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4 hidden overflow-y-auto">
     <div class="bg-slate-900 border border-amber-500/50 rounded-2xl p-6 max-w-2xl w-full shadow-2xl text-slate-100 my-8 relative">
       <button id="close-config-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg">
@@ -342,7 +238,7 @@
         <h2 class="text-xl font-black text-amber-300 font-cinzel flex items-center gap-2">
           <i data-lucide="sliders" class="w-5 h-5 text-amber-400"></i> Configuración Multi-Evento
         </h2>
-        <p class="text-xs text-slate-400 mt-1">Sincronizado con Firestore (<code class="text-amber-300">tickets/event_config</code>). Cambia textos, tarifas y rangos sin editar el código.</p>
+        <p class="text-xs text-slate-400 mt-1">Sincronizado con Firestore (<code class="text-amber-300">tickets/event_config</code>).</p>
       </div>
 
       <form id="event-config-form" class="space-y-4">
@@ -371,951 +267,40 @@
         </div>
 
         <div class="flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-slate-800">
-          <button type="button" id="btn-restore-default-config" class="text-xs text-slate-400 hover:text-amber-300 underline">
-            Restaurar valores por defecto
-          </button>
+          <button type="button" id="btn-restore-default-config" class="text-xs text-slate-400 hover:text-amber-300 underline">Restaurar valores por defecto</button>
           <div class="flex gap-2">
-            <button type="button" id="btn-cancel-config" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">
-              Cancelar
-            </button>
-            <button type="submit" id="btn-save-config" class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 text-xs font-black rounded-lg shadow-lg transition font-cinzel">
-              Guardar en Firebase
-            </button>
+            <button type="button" id="btn-cancel-config" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">Cancelar</button>
+            <button type="submit" id="btn-save-config" class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 text-xs font-black rounded-lg shadow-lg transition font-cinzel">Guardar en Firebase</button>
           </div>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- MODAL DE LOGIN BONITO -->
   <div id="login-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4 hidden">
     <div class="bg-slate-900 border border-amber-600/50 rounded-2xl p-6 max-w-md w-full shadow-2xl text-slate-100 relative">
       <button id="close-login-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg">
         <i data-lucide="x" class="w-5 h-5"></i>
       </button>
-
       <div class="text-center mb-6">
         <h2 class="text-2xl font-bold text-amber-300 font-cinzel">Acceso Autorizado</h2>
         <p class="text-xs text-slate-400 mt-1">Ingrese sus credenciales de Taquilla o Gestión</p>
       </div>
-
       <form id="login-form" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Correo Electrónico</label>
           <input type="email" id="admin-email" required placeholder="admin@evento.com" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500">
         </div>
-
         <div>
           <label class="block text-xs font-semibold text-slate-300 mb-1">Contraseña</label>
           <input type="password" id="admin-password" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500">
         </div>
-
         <div id="login-error" class="text-red-400 text-xs hidden text-center font-medium"></div>
-
-        <button type="submit" id="btn-submit-login" class="w-full bg-amber-600 hover:bg-amber-500 text-slate-950 font-black py-2.5 rounded-lg text-sm transition-all shadow-lg font-cinzel">
-          Iniciar Sesión
-        </button>
+        <button type="submit" id="btn-submit-login" class="w-full bg-amber-600 hover:bg-amber-500 text-slate-950 font-black py-2.5 rounded-lg text-sm transition-all shadow-lg font-cinzel">Iniciar Sesión</button>
       </form>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, collection, onSnapshot, getDoc, setDoc, writeBatch, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    const appId = 'event-tickets-admin-v1';
-    
-    const firebaseConfig = {
-      apiKey: "AIzaSyBuPc_eomrdE5FCWFQJikaSgWKI2FFceoY",
-      authDomain: "gestion-eventos-f750e.firebaseapp.com",
-      projectId: "gestion-eventos-f750e",
-      storageBucket: "gestion-eventos-f750e.firebasestorage.app",
-      messagingSenderId: "404066870963",
-      appId: "1:404066870963:web:66de28774e0715664b32c6",
-      measurementId: "G-3NWW8QFCY9"
-    };
-
-    const DEFAULT_EVENT_CONFIG = {
-      title: 'Sinfónica de Chiclayo',
-      subtitle: 'CONCIERTO DE LA SINFÓNICA DE CHICLAYO',
-      mapHeading: 'DISTRIBUCIÓN DE BUTACAS',
-      stageLabel: 'ESCENARIO',
-      zones: {
-        'grid-platinum': { name: 'PLATINUM', tag: '', price: 40, start: 1, end: 168, containerId: 'container-platinum' },
-        'grid-vip-a': { name: 'VIP A', tag: 'COLABORACIONES', price: 30, start: 169, end: 300, containerId: 'container-vip-a' },
-        'grid-vip-b': { name: 'VIP B', tag: 'COLABORACIONES', price: 30, start: 301, end: 432, containerId: 'container-vip-b' },
-        'grid-gen-a': { name: 'GENERAL A', tag: '', price: 20, start: 433, end: 542, containerId: 'container-gen-a' },
-        'grid-gen-b': { name: 'GENERAL B', tag: '', price: 25, start: 543, end: 682, containerId: 'container-gen-b' },
-        'grid-gen-c': { name: 'GENERAL C', tag: '', price: 20, start: 683, end: 792, containerId: 'container-gen-c' }
-      }
-    };
-
-    let EVENT_CONFIG = JSON.parse(JSON.stringify(DEFAULT_EVENT_CONFIG));
-    let ZONE_CONFIG = EVENT_CONFIG.zones;
-
-    let seatsData = {};
-    let integrantsList = [];
-    let operatorSelectedSeats = new Set();
-    let currentHighlightedIntegrantId = null;
-    let highlightedIntegrantSeats = new Set();
-    let editingIntegrantId = null;
-    let db = null;
-    let auth = null;
-    let currentUserRole = 'guest';
-
-    // --- UTILIDADES UI: TOASTS Y MODAL DE CONFIRMACIÓN ---
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      if (!container) return;
-
-      const styles = {
-        success: { border: 'border-emerald-500/60', bg: 'bg-slate-900/95', icon: 'check-circle-2', iconColor: 'text-emerald-400' },
-        warning: { border: 'border-amber-500/60', bg: 'bg-slate-900/95', icon: 'alert-circle', iconColor: 'text-amber-400' },
-        error:   { border: 'border-rose-500/60', bg: 'bg-slate-900/95', icon: 'x-circle', iconColor: 'text-rose-400' },
-        info:    { border: 'border-sky-500/60', bg: 'bg-slate-900/95', icon: 'info', iconColor: 'text-sky-400' }
-      };
-
-      const cfg = styles[type] || styles.info;
-      const toast = document.createElement('div');
-      toast.className = `toast-enter pointer-events-auto flex items-center gap-3 ${cfg.bg} border ${cfg.border} text-slate-100 px-4 py-3 rounded-xl shadow-2xl backdrop-blur-md text-xs font-medium`;
-      toast.innerHTML = `
-        <i data-lucide="${cfg.icon}" class="w-4 h-4 ${cfg.iconColor} shrink-0"></i>
-        <span class="flex-1 leading-snug">${message}</span>
-      `;
-
-      container.appendChild(toast);
-      if (window.lucide) lucide.createIcons();
-
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(100%)';
-        toast.style.transition = 'all 0.25s ease';
-        setTimeout(() => toast.remove(), 250);
-      }, 3600);
-    }
-
-    function showConfirmModal(title, message, acceptLabel = 'Confirmar') {
-      return new Promise((resolve) => {
-        const modal = document.getElementById('confirm-modal');
-        document.getElementById('confirm-modal-title').innerText = title;
-        document.getElementById('confirm-modal-message').innerText = message;
-        const btnAccept = document.getElementById('confirm-modal-accept');
-        const btnCancel = document.getElementById('confirm-modal-cancel');
-        btnAccept.innerText = acceptLabel;
-
-        modal.classList.remove('hidden');
-        if (window.lucide) lucide.createIcons();
-
-        const cleanup = (result) => {
-          modal.classList.add('hidden');
-          btnAccept.removeEventListener('click', onAccept);
-          btnCancel.removeEventListener('click', onCancel);
-          resolve(result);
-        };
-
-        const onAccept = () => cleanup(true);
-        const onCancel = () => cleanup(false);
-
-        btnAccept.addEventListener('click', onAccept);
-        btnCancel.addEventListener('click', onCancel);
-      });
-    }
-
-    function getMapDocRef() {
-      return doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'seating_map');
-    }
-
-    function getEventConfigDocRef() {
-      return doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'event_config');
-    }
-
-    function applyEventConfigToUI() {
-      ZONE_CONFIG = EVENT_CONFIG.zones;
-
-      document.title = `${EVENT_CONFIG.mapHeading} - ${EVENT_CONFIG.title}`;
-      const headerTitle = document.getElementById('header-event-title');
-      const mapHeading = document.getElementById('map-heading-text');
-      const mapSubtitle = document.getElementById('map-subtitle-text');
-      const stageLabel = document.getElementById('stage-label-text');
-
-      if (headerTitle) headerTitle.innerText = EVENT_CONFIG.title;
-      if (mapHeading) mapHeading.innerText = EVENT_CONFIG.mapHeading;
-      if (mapSubtitle) mapSubtitle.innerText = EVENT_CONFIG.subtitle;
-      if (stageLabel) stageLabel.innerText = EVENT_CONFIG.stageLabel;
-
-      // Actualizar encabezados de cada zona
-      const orderedKeys = ['grid-platinum', 'grid-vip-a', 'grid-vip-b', 'grid-gen-a', 'grid-gen-b', 'grid-gen-c'];
-      const filterZoneSelect = document.getElementById('filter-zone');
-      const currentZoneFilter = filterZoneSelect ? filterZoneSelect.value : 'ALL';
-
-      if (filterZoneSelect) {
-        filterZoneSelect.innerHTML = '<option value="ALL">Todas las zonas</option>';
-      }
-
-      orderedKeys.forEach(gridId => {
-        const z = ZONE_CONFIG[gridId];
-        if (!z) return;
-
-        const labelEl = document.getElementById(`label-${gridId}`);
-        const tagEl = document.getElementById(`tag-${gridId}`);
-        if (labelEl) labelEl.innerText = `${z.name} S/${z.price}`;
-        if (tagEl) {
-          if (z.tag && z.tag.trim() !== '') {
-            tagEl.innerText = z.tag;
-            tagEl.classList.remove('hidden');
-          } else {
-            tagEl.classList.add('hidden');
-          }
-        }
-
-        if (filterZoneSelect) {
-          const opt = document.createElement('option');
-          opt.value = z.name;
-          opt.innerText = `${z.name} (S/ ${z.price})`;
-          filterZoneSelect.appendChild(opt);
-        }
-      });
-
-      if (filterZoneSelect) {
-        filterZoneSelect.value = Array.from(filterZoneSelect.options).some(o => o.value === currentZoneFilter)
-          ? currentZoneFilter
-          : 'ALL';
-      }
-    }
-
-    function openEventConfigModal() {
-      document.getElementById('cfg-title').value = EVENT_CONFIG.title || '';
-      document.getElementById('cfg-subtitle').value = EVENT_CONFIG.subtitle || '';
-      document.getElementById('cfg-map-heading').value = EVENT_CONFIG.mapHeading || '';
-      document.getElementById('cfg-stage-label').value = EVENT_CONFIG.stageLabel || '';
-
-      const zonesContainer = document.getElementById('cfg-zones-container');
-      zonesContainer.innerHTML = '';
-
-      const orderedKeys = ['grid-platinum', 'grid-vip-a', 'grid-vip-b', 'grid-gen-a', 'grid-gen-b', 'grid-gen-c'];
-      orderedKeys.forEach(gridId => {
-        const z = ZONE_CONFIG[gridId];
-        const row = document.createElement('div');
-        row.className = 'grid grid-cols-12 gap-2 items-center bg-slate-950/90 p-2.5 rounded-xl border border-slate-800 text-xs';
-        row.dataset.gridId = gridId;
-        row.innerHTML = `
-          <div class="col-span-3">
-            <label class="text-[10px] text-slate-400 block">Zona</label>
-            <input type="text" class="cfg-z-name w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white font-bold" value="${z.name}">
-          </div>
-          <div class="col-span-3">
-            <label class="text-[10px] text-slate-400 block">Sub-etiqueta</label>
-            <input type="text" placeholder="Opcional" class="cfg-z-tag w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200" value="${z.tag || ''}">
-          </div>
-          <div class="col-span-2">
-            <label class="text-[10px] text-slate-400 block">Precio (S/)</label>
-            <input type="number" min="0" step="1" class="cfg-z-price w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-amber-300 font-bold" value="${z.price}">
-          </div>
-          <div class="col-span-2">
-            <label class="text-[10px] text-slate-400 block">Inicio #</label>
-            <input type="number" min="1" class="cfg-z-start w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200" value="${z.start}">
-          </div>
-          <div class="col-span-2">
-            <label class="text-[10px] text-slate-400 block">Fin #</label>
-            <input type="number" min="1" class="cfg-z-end w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200" value="${z.end}">
-          </div>
-        `;
-        zonesContainer.appendChild(row);
-      });
-
-      document.getElementById('event-config-modal').classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function getSeatZone(seatNum) {
-      for (const [gridId, zone] of Object.entries(ZONE_CONFIG)) {
-        if (seatNum >= zone.start && seatNum <= zone.end) return { gridId, ...zone };
-      }
-      return null;
-    }
-
-    function calculateTotalAmount(seats) {
-      let total = 0;
-      (seats || []).forEach(sNum => {
-        const zone = getSeatZone(sNum);
-        if (zone) total += Number(zone.price || 0);
-      });
-      return total;
-    }
-
-    function renderAllGrids() {
-      const searchInput = document.getElementById('search-input');
-      const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
-      const zoneFilter = document.getElementById('filter-zone') ? document.getElementById('filter-zone').value : 'ALL';
-      const statusFilter = document.getElementById('filter-status') ? document.getElementById('filter-status').value : 'all';
-      const isStaff = (currentUserRole === 'admin' || currentUserRole === 'operator');
-
-      for (const [gridId, zone] of Object.entries(ZONE_CONFIG)) {
-        const container = document.getElementById(gridId);
-        const parentContainer = document.getElementById(zone.containerId);
-        if (!container || !parentContainer) continue;
-
-        if (zoneFilter !== 'ALL' && zone.name !== zoneFilter) {
-          parentContainer.style.display = 'none';
-          continue;
-        } else {
-          parentContainer.style.display = 'flex';
-        }
-
-        container.innerHTML = '';
-        const fragment = document.createDocumentFragment();
-
-        for (let i = zone.start; i <= zone.end; i++) {
-          const rawSeatInfo = seatsData[i];
-          let status = 'disponible';
-          let seatOwner = '';
-
-          if (rawSeatInfo) {
-            if (!isStaff && rawSeatInfo.status === 'asignado') {
-              status = 'disponible';
-            } else {
-              status = rawSeatInfo.status || 'disponible';
-              seatOwner = isStaff ? (rawSeatInfo.clientName || '').toLowerCase() : '';
-            }
-          }
-
-          if (statusFilter !== 'all' && status !== statusFilter) {
-            continue;
-          }
-
-          const btn = document.createElement('button');
-          btn.type = 'button';
-          btn.innerText = i;
-
-          if (searchTerm) {
-            const matchesSeatNum = i.toString().includes(searchTerm);
-            const matchesOwner = isStaff && seatOwner.includes(searchTerm);
-            btn.style.opacity = (matchesSeatNum || matchesOwner) ? '1' : '0.15';
-          } else {
-            btn.style.opacity = '1';
-          }
-
-          let colorClasses = '';
-          if (highlightedIntegrantSeats.has(i)) {
-            colorClasses = 'seat-highlighted';
-          } else if (operatorSelectedSeats.has(i)) {
-            colorClasses = 'seat-selected';
-          } else if (status === 'reservado') {
-            colorClasses = 'seat-reserved';
-            if (!isStaff) btn.classList.add('cursor-not-allowed');
-          } else if (status === 'asignado') {
-            colorClasses = 'seat-assigned';
-          } else {
-            colorClasses = (gridId === 'grid-platinum') ? 'seat-platinum' : 'seat-available';
-          }
-
-          if (isStaff && rawSeatInfo && rawSeatInfo.clientName) {
-            btn.title = `Butaca #${i} (${zone.name} - S/ ${zone.price}) | ${status.toUpperCase()}: ${rawSeatInfo.clientName}`;
-          } else {
-            btn.title = `Butaca #${i} | ${zone.name} (S/ ${zone.price}) - ${status === 'reservado' ? 'Ocupada' : 'Disponible'}`;
-          }
-
-          btn.className = `seat-btn ${colorClasses}`;
-
-          btn.addEventListener('click', () => {
-            if (isStaff) {
-              if (status !== 'disponible' && !operatorSelectedSeats.has(i)) {
-                const ownerLabel = rawSeatInfo?.clientName ? ` a ${rawSeatInfo.clientName}` : '';
-                showToast(`La butaca #${i} ya está ${status}${ownerLabel}.`, 'warning');
-                return;
-              }
-              if (operatorSelectedSeats.has(i)) {
-                operatorSelectedSeats.delete(i);
-              } else {
-                operatorSelectedSeats.add(i);
-              }
-              updateOperatorSeatsDisplay();
-              renderAllGrids();
-            } else {
-              if (status === 'reservado') {
-                showToast(`La butaca #${i} (${zone.name}) ya se encuentra ocupada.`, 'warning');
-              } else {
-                showToast(`Butaca #${i} (${zone.name} - S/ ${zone.price}.00) disponible en taquilla.`, 'info');
-              }
-            }
-          });
-          fragment.appendChild(btn);
-        }
-        container.appendChild(fragment);
-      }
-    }
-
-    function renderIntegrantsList() {
-      const container = document.getElementById('integrants-list-container');
-      if (!container) return;
-
-      const searchInput = document.getElementById('search-input');
-      const searchTerm = searchInput ? searchInput.value.trim().toLowerCase() : '';
-
-      const filtered = integrantsList.filter(item => {
-        if (!searchTerm) return true;
-        const matchesName = item.name.toLowerCase().includes(searchTerm);
-        const matchesDni = item.dni && item.dni.toLowerCase().includes(searchTerm);
-        const matchesSeat = (item.seats || []).some(s => s.toString().includes(searchTerm));
-        return matchesName || matchesDni || matchesSeat;
-      });
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-500 italic">No se encontraron integrantes.</p>`;
-        return;
-      }
-
-      container.innerHTML = '';
-      filtered.forEach(item => {
-        const seats = item.seats || [];
-        const seatsText = seats.length > 0 ? seats.map(s => `#${s}`).join(', ') : 'Ninguno';
-        const totalAmount = calculateTotalAmount(seats);
-        const isHighlighted = currentHighlightedIntegrantId === item.id;
-        const seatStatusBadge = item.seatStatus === 'reservado' 
-          ? '<span class="text-amber-400 font-bold bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-600/40">Reservado (Pagado)</span>' 
-          : '<span class="text-sky-300 font-bold bg-sky-950/60 px-1.5 py-0.5 rounded border border-sky-600/40">Asignado</span>';
-
-        const card = document.createElement('div');
-        card.className = `p-2.5 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs border transition cursor-pointer ${isHighlighted ? 'bg-amber-950/40 border-amber-500 ring-1 ring-amber-500' : 'bg-slate-950/90 border-amber-600/30 hover:border-amber-500'}`;
-
-        card.innerHTML = `
-          <div class="flex items-center gap-3 flex-1">
-            <div class="bg-amber-500 text-slate-950 font-black px-2.5 py-1 rounded-md text-xs font-cinzel">${item.name}</div>
-            <div>
-              <div class="text-slate-300">DNI: <span class="font-semibold text-white">${item.dni || 'N/A'}</span> | Estado: ${seatStatusBadge}</div>
-              <div class="text-[10px] text-amber-300 font-bold mt-0.5">Butacas: ${seatsText} | <span class="text-emerald-400">Monto: S/ ${totalAmount}.00</span></div>
-            </div>
-          </div>
-          <div class="flex items-center gap-1.5">
-            <button class="btn-edit-integrant bg-indigo-950/80 hover:bg-indigo-900 text-indigo-200 border border-indigo-700 px-2 py-1 rounded-md text-[11px] transition flex items-center gap-1"><i data-lucide="edit-3" class="w-3 h-3"></i> Editar</button>
-            <button class="btn-highlight px-2.5 py-1 rounded-md text-[11px] border transition ${isHighlighted ? 'bg-amber-600 text-slate-950 font-bold border-amber-400' : 'bg-amber-950/80 text-amber-200 border-amber-700'}">${isHighlighted ? 'Ocultar' : 'Ver en Mapa'}</button>
-            <button class="btn-delete-integrant bg-rose-950/60 hover:bg-rose-900 text-rose-300 px-2 py-1 rounded-md text-[11px] transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-          </div>
-        `;
-
-        card.querySelector('.btn-edit-integrant').addEventListener('click', (e) => {
-          e.stopPropagation();
-          startEditingIntegrant(item);
-        });
-
-        card.querySelector('.btn-highlight').addEventListener('click', (e) => {
-          e.stopPropagation();
-          if (currentHighlightedIntegrantId === item.id) {
-            currentHighlightedIntegrantId = null;
-            highlightedIntegrantSeats.clear();
-          } else {
-            currentHighlightedIntegrantId = item.id;
-            highlightedIntegrantSeats = new Set(seats);
-          }
-          renderIntegrantsList();
-          renderAllGrids();
-        });
-
-        card.querySelector('.btn-delete-integrant').addEventListener('click', async (e) => {
-          e.stopPropagation();
-          const confirmed = await showConfirmModal(
-            'Eliminar Integrante',
-            `¿Deseas eliminar a ${item.name} y liberar sus ${seats.length} butaca(s) asignadas?`,
-            'Sí, Eliminar'
-          );
-          if (confirmed) {
-            try {
-              const batch = writeBatch(db);
-              const atomicUpdates = {};
-              for (const sNum of seats) {
-                atomicUpdates[`seats.${sNum}`] = deleteField();
-              }
-              if (Object.keys(atomicUpdates).length > 0) {
-                batch.update(getMapDocRef(), atomicUpdates);
-              }
-              batch.delete(doc(db, 'integrants', item.id));
-              await batch.commit();
-
-              if (currentHighlightedIntegrantId === item.id) {
-                currentHighlightedIntegrantId = null;
-                highlightedIntegrantSeats.clear();
-              }
-              showToast(`Registro de ${item.name} eliminado correctamente.`, 'success');
-            } catch (err) {
-              console.error("Error eliminando integrante:", err);
-              showToast("Error de permisos o conexión al eliminar.", 'error');
-            }
-          }
-        });
-
-        container.appendChild(card);
-      });
-      if (window.lucide) lucide.createIcons();
-    }
-
-    function startEditingIntegrant(item) {
-      editingIntegrantId = item.id;
-      document.getElementById('op-integrant-name').value = item.name;
-      document.getElementById('op-integrant-dni').value = item.dni || '';
-      document.getElementById('op-seat-status').value = item.seatStatus || 'asignado';
-
-      operatorSelectedSeats = new Set(item.seats || []);
-      updateOperatorSeatsDisplay();
-
-      document.getElementById('btn-save-text').innerText = "Guardar";
-      document.getElementById('btn-cancel-edit').classList.remove('hidden');
-
-      renderAllGrids();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      showToast(`Editando butacas de ${item.name}`, 'info');
-    }
-
-    function cancelEditingIntegrant() {
-      editingIntegrantId = null;
-      operatorSelectedSeats.clear();
-
-      document.getElementById('op-integrant-name').value = '';
-      document.getElementById('op-integrant-dni').value = '';
-      document.getElementById('op-seat-status').value = 'asignado';
-      document.getElementById('btn-save-text').innerText = "Asignar";
-      document.getElementById('btn-cancel-edit').classList.add('hidden');
-
-      updateOperatorSeatsDisplay();
-      renderAllGrids();
-    }
-
-    function updateOperatorSeatsDisplay() {
-      const display = document.getElementById('op-selected-seats-display');
-      if (!display) return;
-      const sorted = Array.from(operatorSelectedSeats).sort((a, b) => a - b);
-      display.value = sorted.length > 0 ? sorted.map(s => `#${s}`).join(', ') : '';
-    }
-
-    function renderAuthControls() {
-      const dynamicAdminContainer = document.getElementById('dynamic-admin-actions');
-      const authButtonsContainer = document.getElementById('auth-buttons-container');
-      const operatorSection = document.getElementById('operator-integrants-section');
-      const kpiSection = document.getElementById('kpi-section');
-      const staffLegends = document.querySelectorAll('.staff-only-legend, .staff-only-option');
-
-      dynamicAdminContainer.innerHTML = '';
-      authButtonsContainer.innerHTML = '';
-
-      if (currentUserRole === 'admin' || currentUserRole === 'operator') {
-        operatorSection.classList.remove('hidden');
-        kpiSection.classList.remove('hidden');
-        staffLegends.forEach(el => el.classList.remove('hidden'));
-
-        if (currentUserRole === 'admin') {
-          const btnConfig = document.createElement('button');
-          btnConfig.className = 'flex items-center gap-2 bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-200 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg border border-indigo-700/60 transition';
-          btnConfig.innerHTML = `<i data-lucide="sliders" class="w-4 h-4"></i><span class="hidden sm:inline">Configurar Evento</span>`;
-          btnConfig.addEventListener('click', openEventConfigModal);
-          dynamicAdminContainer.appendChild(btnConfig);
-
-          const btnReset = document.createElement('button');
-          btnReset.className = 'flex items-center gap-2 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg border border-rose-800/60 transition';
-          btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i><span class="hidden sm:inline">Reiniciar Mapa</span>`;
-          btnReset.addEventListener('click', resetSeatingMap);
-          dynamicAdminContainer.appendChild(btnReset);
-        }
-
-        const btnLogout = document.createElement('button');
-        btnLogout.className = 'flex items-center gap-2 bg-slate-800 hover:bg-red-900/50 text-slate-300 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg border border-slate-700 transition';
-        btnLogout.innerHTML = `<i data-lucide="log-out" class="w-4 h-4"></i><span>Salir</span>`;
-        btnLogout.addEventListener('click', async () => {
-          await signOut(auth);
-          showToast('Sesión cerrada correctamente.', 'info');
-        });
-        authButtonsContainer.appendChild(btnLogout);
-      } else {
-        operatorSection.classList.add('hidden');
-        kpiSection.classList.add('hidden');
-        staffLegends.forEach(el => el.classList.add('hidden'));
-
-        const btnLogin = document.createElement('button');
-        btnLogin.className = 'flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold text-xs sm:text-sm px-3 py-2 rounded-lg shadow-lg transition font-cinzel';
-        btnLogin.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4"></i><span>Acceso Autorizado</span>`;
-        btnLogin.addEventListener('click', () => {
-          document.getElementById('login-modal').classList.remove('hidden');
-        });
-        authButtonsContainer.appendChild(btnLogin);
-      }
-      if (window.lucide) lucide.createIcons();
-    }
-
-    let unsubscribeIntegrants = null;
-
-    async function initFirebase() {
-      try {
-        const app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
-
-        // Escuchar configuración multi-evento en tiempo real
-        onSnapshot(getEventConfigDocRef(), (cfgSnap) => {
-          if (cfgSnap.exists()) {
-            const remote = cfgSnap.data();
-            EVENT_CONFIG = {
-              ...DEFAULT_EVENT_CONFIG,
-              ...remote,
-              zones: { ...DEFAULT_EVENT_CONFIG.zones, ...(remote.zones || {}) }
-            };
-          } else {
-            EVENT_CONFIG = JSON.parse(JSON.stringify(DEFAULT_EVENT_CONFIG));
-          }
-          applyEventConfigToUI();
-          renderAllGrids();
-          updateKPIs();
-        });
-
-        // Escuchar mapa de asientos en tiempo real
-        onSnapshot(getMapDocRef(), (docSnap) => {
-          seatsData = docSnap.exists() ? (docSnap.data().seats || {}) : {};
-          renderAllGrids();
-          updateKPIs();
-        });
-
-        onAuthStateChanged(auth, async (user) => {
-          const syncText = document.getElementById('sync-status-text');
-          const syncIndicator = document.getElementById('sync-status-indicator');
-
-          if (unsubscribeIntegrants) {
-            unsubscribeIntegrants();
-            unsubscribeIntegrants = null;
-          }
-
-          if (user) {
-            try {
-              const userSnap = await getDoc(doc(db, 'users', user.uid));
-              if (userSnap.exists() && userSnap.data().role) {
-                currentUserRole = userSnap.data().role;
-              } else {
-                currentUserRole = 'guest';
-              }
-            } catch (err) {
-              console.error("Error validando rol:", err);
-              currentUserRole = 'guest';
-            }
-
-            if (currentUserRole === 'admin' || currentUserRole === 'operator') {
-              if (syncText) syncText.innerText = `${currentUserRole.toUpperCase()}: ${user.email}`;
-              if (syncIndicator) syncIndicator.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
-
-              unsubscribeIntegrants = onSnapshot(collection(db, 'integrants'), (querySnap) => {
-                integrantsList = [];
-                querySnap.forEach((docSnap) => {
-                  integrantsList.push({ id: docSnap.id, ...docSnap.data() });
-                });
-                renderIntegrantsList();
-                renderAllGrids();
-              });
-            } else {
-              if (syncText) syncText.innerText = "Usuario sin rol autorizado";
-              if (syncIndicator) syncIndicator.className = "w-2.5 h-2.5 rounded-full bg-red-500";
-            }
-          } else {
-            currentUserRole = 'guest';
-            integrantsList = [];
-            if (syncText) syncText.innerText = "Vista Pública (Invitado)";
-            if (syncIndicator) syncIndicator.className = "w-2.5 h-2.5 rounded-full bg-amber-500";
-          }
-
-          renderAuthControls();
-          renderAllGrids();
-        });
-      } catch (err) {
-        console.warn("Error Firebase:", err);
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      applyEventConfigToUI();
-      renderAllGrids();
-      renderAuthControls();
-
-      document.getElementById('close-login-modal').addEventListener('click', () => {
-        document.getElementById('login-modal').classList.add('hidden');
-      });
-
-      document.getElementById('close-config-modal').addEventListener('click', () => {
-        document.getElementById('event-config-modal').classList.add('hidden');
-      });
-
-      document.getElementById('btn-cancel-config').addEventListener('click', () => {
-        document.getElementById('event-config-modal').classList.add('hidden');
-      });
-
-      document.getElementById('btn-restore-default-config').addEventListener('click', () => {
-        EVENT_CONFIG = JSON.parse(JSON.stringify(DEFAULT_EVENT_CONFIG));
-        ZONE_CONFIG = EVENT_CONFIG.zones;
-        openEventConfigModal();
-        showToast("Valores por defecto cargados. Haz clic en 'Guardar en Firebase' para aplicar.", 'info');
-      });
-
-      document.getElementById('event-config-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btnSave = document.getElementById('btn-save-config');
-        const updatedZones = JSON.parse(JSON.stringify(ZONE_CONFIG));
-
-        document.querySelectorAll('#cfg-zones-container > div').forEach(row => {
-          const gridId = row.dataset.gridId;
-          updatedZones[gridId] = {
-            ...updatedZones[gridId],
-            name: row.querySelector('.cfg-z-name').value.trim().toUpperCase(),
-            tag: row.querySelector('.cfg-z-tag').value.trim().toUpperCase(),
-            price: Number(row.querySelector('.cfg-z-price').value) || 0,
-            start: Number(row.querySelector('.cfg-z-start').value) || 1,
-            end: Number(row.querySelector('.cfg-z-end').value) || 1
-          };
-        });
-
-        const payload = {
-          title: document.getElementById('cfg-title').value.trim(),
-          subtitle: document.getElementById('cfg-subtitle').value.trim().toUpperCase(),
-          mapHeading: document.getElementById('cfg-map-heading').value.trim().toUpperCase(),
-          stageLabel: document.getElementById('cfg-stage-label').value.trim().toUpperCase(),
-          zones: updatedZones,
-          updatedAt: new Date().toISOString()
-        };
-
-        try {
-          btnSave.innerText = "Guardando...";
-          btnSave.disabled = true;
-          await setDoc(getEventConfigDocRef(), payload, { merge: true });
-          document.getElementById('event-config-modal').classList.add('hidden');
-          showToast("Configuración del evento actualizada en tiempo real.", 'success');
-        } catch (err) {
-          console.error("Error guardando configuración:", err);
-          showToast("Error de permisos. Verifica las reglas de Firestore para event_config.", 'error');
-        } finally {
-          btnSave.innerText = "Guardar en Firebase";
-          btnSave.disabled = false;
-        }
-      });
-
-      document.getElementById('btn-cancel-edit').addEventListener('click', cancelEditingIntegrant);
-
-      document.getElementById('login-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('admin-email').value.trim();
-        const password = document.getElementById('admin-password').value;
-        const errorEl = document.getElementById('login-error');
-        const btn = document.getElementById('btn-submit-login');
-
-        try {
-          errorEl.classList.add('hidden');
-          btn.innerText = "Verificando...";
-          btn.disabled = true;
-          await signInWithEmailAndPassword(auth, email, password);
-          document.getElementById('login-modal').classList.add('hidden');
-          showToast('Bienvenido al panel operativo.', 'success');
-        } catch (err) {
-          errorEl.innerText = "Credenciales incorrectas o usuario no autorizado.";
-          errorEl.classList.remove('hidden');
-        } finally {
-          btn.innerText = "Iniciar Sesión";
-          btn.disabled = false;
-        }
-      });
-
-      const btnSaveAssign = document.getElementById('btn-save-integrant-assignment');
-      if (btnSaveAssign) {
-        btnSaveAssign.addEventListener('click', async () => {
-          const name = document.getElementById('op-integrant-name').value.trim();
-          const dni = document.getElementById('op-integrant-dni').value.trim();
-          const seatStatus = document.getElementById('op-seat-status').value;
-          const seatsArray = Array.from(operatorSelectedSeats).sort((a, b) => a - b);
-
-          if (!name) {
-            showToast("Ingresa el nombre del integrante.", 'warning');
-            return;
-          }
-          if (seatsArray.length === 0) {
-            showToast("Selecciona al menos una butaca en el mapa.", 'warning');
-            return;
-          }
-
-          const targetId = editingIntegrantId || ('int_' + Date.now());
-          const atomicMapUpdates = {};
-
-          for (const [sNum, sInfo] of Object.entries(seatsData)) {
-            if (sInfo && (
-              (editingIntegrantId && sInfo.integrantId === editingIntegrantId) ||
-              (sInfo.clientName && sInfo.clientName.toLowerCase() === name.toLowerCase())
-            )) {
-              atomicMapUpdates[`seats.${sNum}`] = deleteField();
-            }
-          }
-
-          seatsArray.forEach(sNum => {
-            atomicMapUpdates[`seats.${sNum}`] = {
-              status: seatStatus,
-              clientName: name,
-              clientDni: dni,
-              integrantId: targetId,
-              updatedAt: new Date().toISOString()
-            };
-          });
-
-          try {
-            const batch = writeBatch(db);
-            batch.update(getMapDocRef(), atomicMapUpdates);
-
-            const integrantRef = doc(db, 'integrants', targetId);
-            batch.set(integrantRef, {
-              name,
-              dni,
-              seatStatus,
-              seats: seatsArray,
-              updatedAt: new Date().toISOString()
-            }, { merge: true });
-
-            await batch.commit();
-
-            showToast(
-              editingIntegrantId 
-                ? `Butacas actualizadas para ${name}.` 
-                : `Asignación registrada para ${name} (${seatsArray.length} butacas).`,
-              'success'
-            );
-
-            editingIntegrantId = null;
-            operatorSelectedSeats.clear();
-
-            document.getElementById('op-integrant-name').value = '';
-            document.getElementById('op-integrant-dni').value = '';
-            document.getElementById('op-seat-status').value = 'asignado';
-            document.getElementById('btn-save-text').innerText = "Asignar";
-            document.getElementById('btn-cancel-edit').classList.add('hidden');
-
-            updateOperatorSeatsDisplay();
-            renderAllGrids();
-          } catch (err) {
-            console.error("Error guardando asignación atómica:", err);
-            showToast("Error al guardar en la base de datos. Verifica tus permisos.", 'error');
-          }
-        });
-      }
-
-      document.getElementById('search-input').addEventListener('input', () => {
-        renderIntegrantsList();
-        renderAllGrids();
-      });
-
-      document.getElementById('filter-zone').addEventListener('change', renderAllGrids);
-      document.getElementById('filter-status').addEventListener('change', renderAllGrids);
-
-      document.getElementById('btn-export-integrants').addEventListener('click', () => {
-        const headers = ["Nombre", "DNI", "Estado", "Asientos", "Monto_Total"];
-        const rows = [headers];
-        integrantsList.forEach(item => {
-          rows.push([`"${item.name}"`, `"${item.dni || ''}"`, `"${item.seatStatus || 'asignado'}"`, `"${(item.seats || []).join(', ')}"`, calculateTotalAmount(item.seats)]);
-        });
-        const csvContent = "\uFEFF" + rows.map(e => e.join(",")).join("\n");
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = "integrantes_asientos.csv"; link.click();
-        showToast("Archivo CSV exportado.", 'success');
-      });
-
-      document.getElementById('btn-download-pdf-report').addEventListener('click', () => {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-
-        doc.setFont("helvetica", "bold");
-        doc.setFontSize(16);
-        doc.setTextColor(180, 83, 9);
-        doc.text(EVENT_CONFIG.subtitle || EVENT_CONFIG.title.toUpperCase(), 14, 20);
-
-        doc.setFontSize(11);
-        doc.setTextColor(100, 100, 100);
-        doc.text("Reporte Oficial de Asignación de Integrantes y Butacas", 14, 28);
-
-        const tableData = integrantsList.map(item => [
-          item.name,
-          item.dni || 'N/A',
-          (item.seatStatus || 'asignado').toUpperCase(),
-          (item.seats || []).map(s => `#${s}`).join(', '),
-          `S/ ${calculateTotalAmount(item.seats)}.00`
-        ]);
-
-        doc.autoTable({
-          startY: 35,
-          head: [['Integrante', 'DNI / Contacto', 'Estado', 'Asientos Asignados', 'Monto Total']],
-          body: tableData,
-          headStyles: { fillColor: [180, 83, 9], textColor: [255, 255, 255], fontStyle: 'bold' },
-          styles: { fontSize: 10, cellPadding: 4 },
-          alternateRowStyles: { fillColor: [245, 247, 250] }
-        });
-
-        doc.save("reporte_integrantes_evento.pdf");
-        showToast("Reporte PDF generado.", 'success');
-      });
-
-      document.getElementById('btn-download-map').addEventListener('click', () => {
-        showToast("Generando imagen del mapa...", 'info');
-        html2canvas(document.getElementById('full-map-container'), { scale: 2, backgroundColor: '#020617' }).then(canvas => {
-          const link = document.createElement('a'); link.download = 'mapa_asientos_evento.png'; link.href = canvas.toDataURL(); link.click();
-          showToast("Mapa descargado en PNG.", 'success');
-        });
-      });
-
-      initFirebase();
-    });
-
-    async function resetSeatingMap() {
-      const confirmed = await showConfirmModal(
-        'Reiniciar Mapa Completo',
-        'Esta acción liberará todas las butacas y eliminará todos los registros de integrantes. No se puede deshacer.',
-        'Sí, Reiniciar Todo'
-      );
-      if (!confirmed) return;
-
-      try {
-        const batch = writeBatch(db);
-        const integrantsSnap = await getDocs(collection(db, 'integrants'));
-        integrantsSnap.forEach((d) => batch.delete(d.ref));
-
-        batch.set(getMapDocRef(), { seats: {} });
-        await batch.commit();
-        
-        operatorSelectedSeats.clear();
-        highlightedIntegrantSeats.clear();
-        currentHighlightedIntegrantId = null;
-        editingIntegrantId = null;
-        updateOperatorSeatsDisplay();
-        showToast("Mapa e integrantes reiniciados con éxito.", 'success');
-      } catch (err) {
-        console.error("Error al reiniciar:", err);
-        showToast("Error al reiniciar. Solo el administrador principal tiene permisos.", 'error');
-      }
-    }
-
-    function updateKPIs() {
-      let totalSeats = 0, potentialRevenue = 0;
-      let available = 0, assigned = 0, reserved = 0, val = 0;
-
-      for (const zone of Object.values(ZONE_CONFIG)) {
-        for (let i = zone.start; i <= zone.end; i++) {
-          totalSeats++;
-          const price = Number(zone.price || 0);
-          potentialRevenue += price;
-
-          const seat = seatsData[i] || { status: 'disponible' };
-          if (seat.status === 'reservado') {
-            reserved++;
-            val += price;
-          } else if (seat.status === 'asignado') {
-            assigned++;
-          } else {
-            available++;
-          }
-        }
-      }
-
-      document.getElementById('kpi-total').innerText = totalSeats;
-      document.getElementById('kpi-available').innerText = available;
-      document.getElementById('kpi-assigned-sub').innerText = `${assigned} asignados pendientes`;
-      document.getElementById('kpi-reserved').innerText = reserved;
-      document.getElementById('kpi-reserved-val').innerText = `S/ ${val.toLocaleString('es-PE')} recaudados`;
-      document.getElementById('kpi-potential').innerText = `S/ ${potentialRevenue.toLocaleString('es-PE')}`;
-    }
-  </script>
+  <script type="module" src="/src/main.js"></script>
 </body>
 </html>
