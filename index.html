@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Distribución de Butacas - Concierto Sinfónica de Chiclayo</title>
+  <title>Distribución de Butacas - Sistema Multi-Evento</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -109,7 +109,7 @@
           <i data-lucide="music" class="w-6 h-6"></i>
         </div>
         <div>
-          <h1 class="text-xl font-black text-amber-300 font-cinzel tracking-wider uppercase">Sinfónica de Chiclayo</h1>
+          <h1 id="header-event-title" class="text-xl font-black text-amber-300 font-cinzel tracking-wider uppercase">Sinfónica de Chiclayo</h1>
           <p class="text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
             <span id="sync-status-indicator" class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
             <span id="sync-status-text">Cargando estado...</span>
@@ -226,15 +226,7 @@
       <div class="flex items-center gap-3 flex-wrap">
         <div class="flex items-center gap-2">
           <label for="filter-zone" class="text-xs text-slate-400">Filtrar Zona:</label>
-          <select id="filter-zone" class="bg-slate-950 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:ring-1 focus:ring-amber-500">
-            <option value="ALL">Todas las zonas</option>
-            <option value="PLATINUM">Platinum (S/ 40)</option>
-            <option value="VIP A">VIP A (S/ 30)</option>
-            <option value="VIP B">VIP B (S/ 30)</option>
-            <option value="GENERAL A">General A (S/ 20)</option>
-            <option value="GENERAL B">General B (S/ 25)</option>
-            <option value="GENERAL C">General C (S/ 20)</option>
-          </select>
+          <select id="filter-zone" class="bg-slate-950 border border-slate-700 text-xs rounded-lg px-2.5 py-1.5 text-slate-200 focus:outline-none focus:ring-1 focus:ring-amber-500"></select>
         </div>
         <div class="flex items-center gap-2">
           <label for="filter-status" class="text-xs text-slate-400">Estado:</label>
@@ -251,13 +243,13 @@
     <!-- MAPA -->
     <div id="full-map-container" class="p-4 sm:p-6 bg-slate-950 rounded-2xl border-2 border-amber-600/40 space-y-6 shadow-2xl">
       <div class="text-center space-y-1 py-2">
-        <h2 class="text-2xl sm:text-3xl font-black font-cinzel text-amber-300 uppercase tracking-wider">DISTRIBUCIÓN DE BUTACAS</h2>
-        <p class="text-xs sm:text-sm font-cinzel text-amber-100/80 tracking-widest uppercase">CONCIERTO DE LA SINFÓNICA DE CHICLAYO</p>
+        <h2 id="map-heading-text" class="text-2xl sm:text-3xl font-black font-cinzel text-amber-300 uppercase tracking-wider">DISTRIBUCIÓN DE BUTACAS</h2>
+        <p id="map-subtitle-text" class="text-xs sm:text-sm font-cinzel text-amber-100/80 tracking-widest uppercase">CONCIERTO DE LA SINFÓNICA DE CHICLAYO</p>
       </div>
 
       <div class="stage-curtain-gold w-full max-w-3xl mx-auto py-4 rounded-xl text-center shadow-2xl relative overflow-hidden my-2 border border-amber-500/50">
         <div class="relative z-10 flex flex-col items-center justify-center">
-          <h2 class="text-2xl font-black font-cinzel tracking-widest text-amber-300 uppercase">ESCENARIO</h2>
+          <h2 id="stage-label-text" class="text-2xl font-black font-cinzel tracking-widest text-amber-300 uppercase">ESCENARIO</h2>
         </div>
       </div>
 
@@ -265,21 +257,22 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           <div class="lg:col-span-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl p-3 shadow-lg flex flex-col" id="container-vip-a">
             <div class="bg-amber-950/60 border border-amber-500/40 rounded-lg p-1.5 mb-3 text-center">
-              <div class="text-amber-300 font-black text-xs font-cinzel">COLABORACIONES</div>
-              <div class="text-amber-400 font-extrabold text-sm font-cinzel">VIP A S/30</div>
+              <div id="tag-grid-vip-a" class="text-amber-300 font-black text-xs font-cinzel">COLABORACIONES</div>
+              <div id="label-grid-vip-a" class="text-amber-400 font-extrabold text-sm font-cinzel">VIP A S/30</div>
             </div>
             <div class="seat-grid-11 flex-1 align-content-start" id="grid-vip-a"></div>
           </div>
           <div class="lg:col-span-6 bg-slate-900 border-2 border-red-600/50 rounded-xl p-3 shadow-lg flex flex-col" id="container-platinum">
             <div class="bg-red-950/80 border border-red-500/50 rounded-lg p-1.5 mb-3 text-center">
-              <div class="text-red-200 font-black text-sm font-cinzel tracking-wider">PLATINUM S/40</div>
+              <div id="tag-grid-platinum" class="text-red-300 font-black text-xs font-cinzel hidden"></div>
+              <div id="label-grid-platinum" class="text-red-200 font-black text-sm font-cinzel tracking-wider">PLATINUM S/40</div>
             </div>
             <div class="seat-grid-14 flex-1 align-content-start" id="grid-platinum"></div>
           </div>
           <div class="lg:col-span-3 bg-slate-900 border-2 border-amber-500/40 rounded-xl p-3 shadow-lg flex flex-col" id="container-vip-b">
             <div class="bg-amber-950/60 border border-amber-500/40 rounded-lg p-1.5 mb-3 text-center">
-              <div class="text-amber-300 font-black text-xs font-cinzel">COLABORACIONES</div>
-              <div class="text-amber-400 font-extrabold text-sm font-cinzel">VIP B S/30</div>
+              <div id="tag-grid-vip-b" class="text-amber-300 font-black text-xs font-cinzel">COLABORACIONES</div>
+              <div id="label-grid-vip-b" class="text-amber-400 font-extrabold text-sm font-cinzel">VIP B S/30</div>
             </div>
             <div class="seat-grid-11 flex-1 align-content-start" id="grid-vip-b"></div>
           </div>
@@ -288,19 +281,22 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
           <div class="lg:col-span-3 bg-slate-900 border-2 border-amber-500/30 rounded-xl p-3 shadow-lg flex flex-col" id="container-gen-a">
             <div class="bg-slate-950 border border-amber-500/30 rounded-lg p-1.5 mb-3 text-center">
-              <div class="text-amber-200 font-black text-xs font-cinzel">GENERAL A S/20</div>
+              <div id="tag-grid-gen-a" class="text-amber-300 font-black text-xs font-cinzel hidden"></div>
+              <div id="label-grid-gen-a" class="text-amber-200 font-black text-xs font-cinzel">GENERAL A S/20</div>
             </div>
             <div class="seat-grid-11 flex-1 align-content-start" id="grid-gen-a"></div>
           </div>
           <div class="lg:col-span-6 bg-slate-900 border-2 border-amber-500/30 rounded-xl p-3 shadow-lg flex flex-col" id="container-gen-b">
             <div class="bg-slate-950 border border-amber-500/30 rounded-lg p-1.5 mb-3 text-center">
-              <div class="text-amber-200 font-black text-sm font-cinzel">GENERAL B S/25</div>
+              <div id="tag-grid-gen-b" class="text-amber-300 font-black text-xs font-cinzel hidden"></div>
+              <div id="label-grid-gen-b" class="text-amber-200 font-black text-sm font-cinzel">GENERAL B S/25</div>
             </div>
             <div class="seat-grid-14 flex-1 align-content-start" id="grid-gen-b"></div>
           </div>
           <div class="lg:col-span-3 bg-slate-900 border-2 border-amber-500/30 rounded-xl p-3 shadow-lg flex flex-col" id="container-gen-c">
             <div class="bg-slate-950 border border-amber-500/30 rounded-lg p-1.5 mb-3 text-center">
-              <div class="text-amber-200 font-black text-xs font-cinzel">GENERAL C S/20</div>
+              <div id="tag-grid-gen-c" class="text-amber-300 font-black text-xs font-cinzel hidden"></div>
+              <div id="label-grid-gen-c" class="text-amber-200 font-black text-xs font-cinzel">GENERAL C S/20</div>
             </div>
             <div class="seat-grid-11 flex-1 align-content-start" id="grid-gen-c"></div>
           </div>
@@ -332,6 +328,62 @@
           Confirmar
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIGURACIÓN MULTI-EVENTO (SOLO ADMIN) -->
+  <div id="event-config-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md flex items-center justify-center z-50 p-4 hidden overflow-y-auto">
+    <div class="bg-slate-900 border border-amber-500/50 rounded-2xl p-6 max-w-2xl w-full shadow-2xl text-slate-100 my-8 relative">
+      <button id="close-config-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+
+      <div class="mb-5 border-b border-slate-800 pb-3">
+        <h2 class="text-xl font-black text-amber-300 font-cinzel flex items-center gap-2">
+          <i data-lucide="sliders" class="w-5 h-5 text-amber-400"></i> Configuración Multi-Evento
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">Sincronizado con Firestore (<code class="text-amber-300">tickets/event_config</code>). Cambia textos, tarifas y rangos sin editar el código.</p>
+      </div>
+
+      <form id="event-config-form" class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-amber-200 mb-1">Título Principal (Encabezado)</label>
+            <input type="text" id="cfg-title" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-amber-200 mb-1">Subtítulo del Evento</label>
+            <input type="text" id="cfg-subtitle" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-amber-200 mb-1">Título del Plano</label>
+            <input type="text" id="cfg-map-heading" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-amber-200 mb-1">Etiqueta del Escenario</label>
+            <input type="text" id="cfg-stage-label" required class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+          </div>
+        </div>
+
+        <div class="space-y-2 pt-2 border-t border-slate-800">
+          <div class="text-xs font-bold text-amber-300 uppercase tracking-wider">Zonas, Tarifas y Rangos de Butacas</div>
+          <div id="cfg-zones-container" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
+        </div>
+
+        <div class="flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-slate-800">
+          <button type="button" id="btn-restore-default-config" class="text-xs text-slate-400 hover:text-amber-300 underline">
+            Restaurar valores por defecto
+          </button>
+          <div class="flex gap-2">
+            <button type="button" id="btn-cancel-config" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">
+              Cancelar
+            </button>
+            <button type="submit" id="btn-save-config" class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 text-xs font-black rounded-lg shadow-lg transition font-cinzel">
+              Guardar en Firebase
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -370,7 +422,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, collection, onSnapshot, getDoc, writeBatch, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getFirestore, doc, collection, onSnapshot, getDoc, setDoc, writeBatch, deleteField } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const appId = 'event-tickets-admin-v1';
     
@@ -384,14 +436,23 @@
       measurementId: "G-3NWW8QFCY9"
     };
 
-    const ZONE_CONFIG = {
-      'grid-platinum': { name: 'PLATINUM', price: 40, start: 1, end: 168, containerId: 'container-platinum' },
-      'grid-vip-a': { name: 'VIP A', price: 30, start: 169, end: 300, containerId: 'container-vip-a' },
-      'grid-vip-b': { name: 'VIP B', price: 30, start: 301, end: 432, containerId: 'container-vip-b' },
-      'grid-gen-a': { name: 'GENERAL A', price: 20, start: 433, end: 542, containerId: 'container-gen-a' },
-      'grid-gen-b': { name: 'GENERAL B', price: 25, start: 543, end: 682, containerId: 'container-gen-b' },
-      'grid-gen-c': { name: 'GENERAL C', price: 20, start: 683, end: 792, containerId: 'container-gen-c' }
+    const DEFAULT_EVENT_CONFIG = {
+      title: 'Sinfónica de Chiclayo',
+      subtitle: 'CONCIERTO DE LA SINFÓNICA DE CHICLAYO',
+      mapHeading: 'DISTRIBUCIÓN DE BUTACAS',
+      stageLabel: 'ESCENARIO',
+      zones: {
+        'grid-platinum': { name: 'PLATINUM', tag: '', price: 40, start: 1, end: 168, containerId: 'container-platinum' },
+        'grid-vip-a': { name: 'VIP A', tag: 'COLABORACIONES', price: 30, start: 169, end: 300, containerId: 'container-vip-a' },
+        'grid-vip-b': { name: 'VIP B', tag: 'COLABORACIONES', price: 30, start: 301, end: 432, containerId: 'container-vip-b' },
+        'grid-gen-a': { name: 'GENERAL A', tag: '', price: 20, start: 433, end: 542, containerId: 'container-gen-a' },
+        'grid-gen-b': { name: 'GENERAL B', tag: '', price: 25, start: 543, end: 682, containerId: 'container-gen-b' },
+        'grid-gen-c': { name: 'GENERAL C', tag: '', price: 20, start: 683, end: 792, containerId: 'container-gen-c' }
+      }
     };
+
+    let EVENT_CONFIG = JSON.parse(JSON.stringify(DEFAULT_EVENT_CONFIG));
+    let ZONE_CONFIG = EVENT_CONFIG.zones;
 
     let seatsData = {};
     let integrantsList = [];
@@ -465,6 +526,108 @@
       return doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'seating_map');
     }
 
+    function getEventConfigDocRef() {
+      return doc(db, 'artifacts', appId, 'public', 'data', 'tickets', 'event_config');
+    }
+
+    function applyEventConfigToUI() {
+      ZONE_CONFIG = EVENT_CONFIG.zones;
+
+      document.title = `${EVENT_CONFIG.mapHeading} - ${EVENT_CONFIG.title}`;
+      const headerTitle = document.getElementById('header-event-title');
+      const mapHeading = document.getElementById('map-heading-text');
+      const mapSubtitle = document.getElementById('map-subtitle-text');
+      const stageLabel = document.getElementById('stage-label-text');
+
+      if (headerTitle) headerTitle.innerText = EVENT_CONFIG.title;
+      if (mapHeading) mapHeading.innerText = EVENT_CONFIG.mapHeading;
+      if (mapSubtitle) mapSubtitle.innerText = EVENT_CONFIG.subtitle;
+      if (stageLabel) stageLabel.innerText = EVENT_CONFIG.stageLabel;
+
+      // Actualizar encabezados de cada zona
+      const orderedKeys = ['grid-platinum', 'grid-vip-a', 'grid-vip-b', 'grid-gen-a', 'grid-gen-b', 'grid-gen-c'];
+      const filterZoneSelect = document.getElementById('filter-zone');
+      const currentZoneFilter = filterZoneSelect ? filterZoneSelect.value : 'ALL';
+
+      if (filterZoneSelect) {
+        filterZoneSelect.innerHTML = '<option value="ALL">Todas las zonas</option>';
+      }
+
+      orderedKeys.forEach(gridId => {
+        const z = ZONE_CONFIG[gridId];
+        if (!z) return;
+
+        const labelEl = document.getElementById(`label-${gridId}`);
+        const tagEl = document.getElementById(`tag-${gridId}`);
+        if (labelEl) labelEl.innerText = `${z.name} S/${z.price}`;
+        if (tagEl) {
+          if (z.tag && z.tag.trim() !== '') {
+            tagEl.innerText = z.tag;
+            tagEl.classList.remove('hidden');
+          } else {
+            tagEl.classList.add('hidden');
+          }
+        }
+
+        if (filterZoneSelect) {
+          const opt = document.createElement('option');
+          opt.value = z.name;
+          opt.innerText = `${z.name} (S/ ${z.price})`;
+          filterZoneSelect.appendChild(opt);
+        }
+      });
+
+      if (filterZoneSelect) {
+        filterZoneSelect.value = Array.from(filterZoneSelect.options).some(o => o.value === currentZoneFilter)
+          ? currentZoneFilter
+          : 'ALL';
+      }
+    }
+
+    function openEventConfigModal() {
+      document.getElementById('cfg-title').value = EVENT_CONFIG.title || '';
+      document.getElementById('cfg-subtitle').value = EVENT_CONFIG.subtitle || '';
+      document.getElementById('cfg-map-heading').value = EVENT_CONFIG.mapHeading || '';
+      document.getElementById('cfg-stage-label').value = EVENT_CONFIG.stageLabel || '';
+
+      const zonesContainer = document.getElementById('cfg-zones-container');
+      zonesContainer.innerHTML = '';
+
+      const orderedKeys = ['grid-platinum', 'grid-vip-a', 'grid-vip-b', 'grid-gen-a', 'grid-gen-b', 'grid-gen-c'];
+      orderedKeys.forEach(gridId => {
+        const z = ZONE_CONFIG[gridId];
+        const row = document.createElement('div');
+        row.className = 'grid grid-cols-12 gap-2 items-center bg-slate-950/90 p-2.5 rounded-xl border border-slate-800 text-xs';
+        row.dataset.gridId = gridId;
+        row.innerHTML = `
+          <div class="col-span-3">
+            <label class="text-[10px] text-slate-400 block">Zona</label>
+            <input type="text" class="cfg-z-name w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-white font-bold" value="${z.name}">
+          </div>
+          <div class="col-span-3">
+            <label class="text-[10px] text-slate-400 block">Sub-etiqueta</label>
+            <input type="text" placeholder="Opcional" class="cfg-z-tag w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200" value="${z.tag || ''}">
+          </div>
+          <div class="col-span-2">
+            <label class="text-[10px] text-slate-400 block">Precio (S/)</label>
+            <input type="number" min="0" step="1" class="cfg-z-price w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-amber-300 font-bold" value="${z.price}">
+          </div>
+          <div class="col-span-2">
+            <label class="text-[10px] text-slate-400 block">Inicio #</label>
+            <input type="number" min="1" class="cfg-z-start w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200" value="${z.start}">
+          </div>
+          <div class="col-span-2">
+            <label class="text-[10px] text-slate-400 block">Fin #</label>
+            <input type="number" min="1" class="cfg-z-end w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200" value="${z.end}">
+          </div>
+        `;
+        zonesContainer.appendChild(row);
+      });
+
+      document.getElementById('event-config-modal').classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+
     function getSeatZone(seatNum) {
       for (const [gridId, zone] of Object.entries(ZONE_CONFIG)) {
         if (seatNum >= zone.start && seatNum <= zone.end) return { gridId, ...zone };
@@ -476,7 +639,7 @@
       let total = 0;
       (seats || []).forEach(sNum => {
         const zone = getSeatZone(sNum);
-        if (zone) total += zone.price;
+        if (zone) total += Number(zone.price || 0);
       });
       return total;
     }
@@ -544,10 +707,9 @@
           } else if (status === 'asignado') {
             colorClasses = 'seat-assigned';
           } else {
-            colorClasses = (zone.name === 'PLATINUM') ? 'seat-platinum' : 'seat-available';
+            colorClasses = (gridId === 'grid-platinum') ? 'seat-platinum' : 'seat-available';
           }
 
-          // Tooltip informativo adaptado al rol
           if (isStaff && rawSeatInfo && rawSeatInfo.clientName) {
             btn.title = `Butaca #${i} (${zone.name} - S/ ${zone.price}) | ${status.toUpperCase()}: ${rawSeatInfo.clientName}`;
           } else {
@@ -571,7 +733,6 @@
               updateOperatorSeatsDisplay();
               renderAllGrids();
             } else {
-              // Feedback claro para visitantes públicos
               if (status === 'reservado') {
                 showToast(`La butaca #${i} (${zone.name}) ya se encuentra ocupada.`, 'warning');
               } else {
@@ -742,9 +903,15 @@
         staffLegends.forEach(el => el.classList.remove('hidden'));
 
         if (currentUserRole === 'admin') {
+          const btnConfig = document.createElement('button');
+          btnConfig.className = 'flex items-center gap-2 bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-200 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg border border-indigo-700/60 transition';
+          btnConfig.innerHTML = `<i data-lucide="sliders" class="w-4 h-4"></i><span class="hidden sm:inline">Configurar Evento</span>`;
+          btnConfig.addEventListener('click', openEventConfigModal);
+          dynamicAdminContainer.appendChild(btnConfig);
+
           const btnReset = document.createElement('button');
           btnReset.className = 'flex items-center gap-2 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg border border-rose-800/60 transition';
-          btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i><span>Reiniciar Mapa</span>`;
+          btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i><span class="hidden sm:inline">Reiniciar Mapa</span>`;
           btnReset.addEventListener('click', resetSeatingMap);
           dynamicAdminContainer.appendChild(btnReset);
         }
@@ -781,6 +948,24 @@
         auth = getAuth(app);
         db = getFirestore(app);
 
+        // Escuchar configuración multi-evento en tiempo real
+        onSnapshot(getEventConfigDocRef(), (cfgSnap) => {
+          if (cfgSnap.exists()) {
+            const remote = cfgSnap.data();
+            EVENT_CONFIG = {
+              ...DEFAULT_EVENT_CONFIG,
+              ...remote,
+              zones: { ...DEFAULT_EVENT_CONFIG.zones, ...(remote.zones || {}) }
+            };
+          } else {
+            EVENT_CONFIG = JSON.parse(JSON.stringify(DEFAULT_EVENT_CONFIG));
+          }
+          applyEventConfigToUI();
+          renderAllGrids();
+          updateKPIs();
+        });
+
+        // Escuchar mapa de asientos en tiempo real
         onSnapshot(getMapDocRef(), (docSnap) => {
           seatsData = docSnap.exists() ? (docSnap.data().seats || {}) : {};
           renderAllGrids();
@@ -841,11 +1026,68 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+      applyEventConfigToUI();
       renderAllGrids();
       renderAuthControls();
 
       document.getElementById('close-login-modal').addEventListener('click', () => {
         document.getElementById('login-modal').classList.add('hidden');
+      });
+
+      document.getElementById('close-config-modal').addEventListener('click', () => {
+        document.getElementById('event-config-modal').classList.add('hidden');
+      });
+
+      document.getElementById('btn-cancel-config').addEventListener('click', () => {
+        document.getElementById('event-config-modal').classList.add('hidden');
+      });
+
+      document.getElementById('btn-restore-default-config').addEventListener('click', () => {
+        EVENT_CONFIG = JSON.parse(JSON.stringify(DEFAULT_EVENT_CONFIG));
+        ZONE_CONFIG = EVENT_CONFIG.zones;
+        openEventConfigModal();
+        showToast("Valores por defecto cargados. Haz clic en 'Guardar en Firebase' para aplicar.", 'info');
+      });
+
+      document.getElementById('event-config-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btnSave = document.getElementById('btn-save-config');
+        const updatedZones = JSON.parse(JSON.stringify(ZONE_CONFIG));
+
+        document.querySelectorAll('#cfg-zones-container > div').forEach(row => {
+          const gridId = row.dataset.gridId;
+          updatedZones[gridId] = {
+            ...updatedZones[gridId],
+            name: row.querySelector('.cfg-z-name').value.trim().toUpperCase(),
+            tag: row.querySelector('.cfg-z-tag').value.trim().toUpperCase(),
+            price: Number(row.querySelector('.cfg-z-price').value) || 0,
+            start: Number(row.querySelector('.cfg-z-start').value) || 1,
+            end: Number(row.querySelector('.cfg-z-end').value) || 1
+          };
+        });
+
+        const payload = {
+          title: document.getElementById('cfg-title').value.trim(),
+          subtitle: document.getElementById('cfg-subtitle').value.trim().toUpperCase(),
+          mapHeading: document.getElementById('cfg-map-heading').value.trim().toUpperCase(),
+          stageLabel: document.getElementById('cfg-stage-label').value.trim().toUpperCase(),
+          zones: updatedZones,
+          updatedAt: new Date().toISOString()
+        };
+
+        try {
+          btnSave.innerText = "Guardando...";
+          btnSave.disabled = true;
+          await setDoc(getEventConfigDocRef(), payload, { merge: true });
+          document.getElementById('event-config-modal').classList.add('hidden');
+          showToast("Configuración del evento actualizada en tiempo real.", 'success');
+        } catch (err) {
+          console.error("Error guardando configuración:", err);
+          showToast("Error de permisos. Verifica las reglas de Firestore para event_config.", 'error');
+        } finally {
+          btnSave.innerText = "Guardar en Firebase";
+          btnSave.disabled = false;
+        }
       });
 
       document.getElementById('btn-cancel-edit').addEventListener('click', cancelEditingIntegrant);
@@ -979,7 +1221,7 @@
         doc.setFont("helvetica", "bold");
         doc.setFontSize(16);
         doc.setTextColor(180, 83, 9);
-        doc.text("CONCIERTO DE LA SINFÓNICA DE CHICLAYO", 14, 20);
+        doc.text(EVENT_CONFIG.subtitle || EVENT_CONFIG.title.toUpperCase(), 14, 20);
 
         doc.setFontSize(11);
         doc.setTextColor(100, 100, 100);
@@ -1002,14 +1244,14 @@
           alternateRowStyles: { fillColor: [245, 247, 250] }
         });
 
-        doc.save("reporte_integrantes_sinfonica.pdf");
+        doc.save("reporte_integrantes_evento.pdf");
         showToast("Reporte PDF generado.", 'success');
       });
 
       document.getElementById('btn-download-map').addEventListener('click', () => {
         showToast("Generando imagen del mapa...", 'info');
         html2canvas(document.getElementById('full-map-container'), { scale: 2, backgroundColor: '#020617' }).then(canvas => {
-          const link = document.createElement('a'); link.download = 'mapa_asientos_sinfonica.png'; link.href = canvas.toDataURL(); link.click();
+          const link = document.createElement('a'); link.download = 'mapa_asientos_evento.png'; link.href = canvas.toDataURL(); link.click();
           showToast("Mapa descargado en PNG.", 'success');
         });
       });
@@ -1020,7 +1262,7 @@
     async function resetSeatingMap() {
       const confirmed = await showConfirmModal(
         'Reiniciar Mapa Completo',
-        'Esta acción liberará las 792 butacas y eliminará todos los registros de integrantes. No se puede deshacer.',
+        'Esta acción liberará todas las butacas y eliminará todos los registros de integrantes. No se puede deshacer.',
         'Sí, Reiniciar Todo'
       );
       if (!confirmed) return;
@@ -1046,23 +1288,33 @@
     }
 
     function updateKPIs() {
+      let totalSeats = 0, potentialRevenue = 0;
       let available = 0, assigned = 0, reserved = 0, val = 0;
-      for (let i = 1; i <= 792; i++) {
-        const zone = getSeatZone(i);
-        const seat = seatsData[i] || { status: 'disponible' };
-        if (seat.status === 'reservado') {
-          reserved++;
-          val += zone ? zone.price : 0;
-        } else if (seat.status === 'asignado') {
-          assigned++;
-        } else {
-          available++;
+
+      for (const zone of Object.values(ZONE_CONFIG)) {
+        for (let i = zone.start; i <= zone.end; i++) {
+          totalSeats++;
+          const price = Number(zone.price || 0);
+          potentialRevenue += price;
+
+          const seat = seatsData[i] || { status: 'disponible' };
+          if (seat.status === 'reservado') {
+            reserved++;
+            val += price;
+          } else if (seat.status === 'asignado') {
+            assigned++;
+          } else {
+            available++;
+          }
         }
       }
+
+      document.getElementById('kpi-total').innerText = totalSeats;
       document.getElementById('kpi-available').innerText = available;
       document.getElementById('kpi-assigned-sub').innerText = `${assigned} asignados pendientes`;
       document.getElementById('kpi-reserved').innerText = reserved;
       document.getElementById('kpi-reserved-val').innerText = `S/ ${val.toLocaleString('es-PE')} recaudados`;
+      document.getElementById('kpi-potential').innerText = `S/ ${potentialRevenue.toLocaleString('es-PE')}`;
     }
   </script>
 </body>
