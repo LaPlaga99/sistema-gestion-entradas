@@ -177,3 +177,34 @@ export function subscribeRealtimeData(callbacks) {
     callbacks.onAuthChange(user);
   });
 }
+
+export async function restoreDatabaseBackup(backupData) {
+  if (!backupData || typeof backupData !== 'object' || !backupData.seats) {
+    throw new Error('El archivo JSON no tiene una estructura válida de respaldo.');
+  }
+
+  const batch = writeBatch(db);
+
+  // 1. Limpiar integrantes actuales y cargar los del respaldo
+  const currentIntegrantsSnap = await getDocs(collection(db, 'integrants'));
+  currentIntegrantsSnap.forEach((d) => batch.delete(d.ref));
+
+  if (Array.isArray(backupData.integrants)) {
+    backupData.integrants.forEach((item) => {
+      if (item.id) {
+        const { id, ...cleanData } = item;
+        batch.set(doc(db, 'integrants', id), cleanData);
+      }
+    });
+  }
+
+  // 2. Restaurar el mapa exacto de butacas
+  batch.set(getMapDocRef(), { seats: backupData.seats || {} });
+
+  // 3. Restaurar configuración del evento si viene incluida
+  if (backupData.eventConfig) {
+    batch.set(getEventConfigDocRef(), backupData.eventConfig);
+  }
+
+  await batch.commit();
+}

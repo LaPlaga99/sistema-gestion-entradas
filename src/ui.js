@@ -1,5 +1,7 @@
 import { createIcons, icons } from 'lucide';
 import { state, calculateTotalAmount, deleteIntegrantAndSeats, logoutUser } from './firebase.js';
+// Al inicio de src/ui.js:
+import { downloadJSONBackup, triggerJSONRestore } from './reports.js';
 
 export const refreshIcons = () => createIcons({ icons });
 
@@ -348,6 +350,21 @@ export function renderAuthControls({ onOpenConfig, onResetMap }) {
       btnReset.innerHTML = `<i data-lucide="rotate-ccw" class="w-4 h-4"></i><span class="hidden sm:inline">Reiniciar Mapa</span>`;
       btnReset.addEventListener('click', onResetMap);
       dynamicAdminContainer.appendChild(btnReset);
+
+      // Dentro de renderAuthControls, en if (state.currentUserRole === 'admin'):
+      const btnBackup = document.createElement('button');
+      btnBackup.className = 'flex items-center gap-1.5 bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg border border-emerald-700/60 transition';
+      btnBackup.title = 'Descargar copia de seguridad completa en JSON';
+      btnBackup.innerHTML = `<i data-lucide="database-backup" class="w-4 h-4"></i><span class="hidden xl:inline">Backup</span>`;
+      btnBackup.addEventListener('click', downloadJSONBackup);
+      dynamicAdminContainer.appendChild(btnBackup);
+
+      const btnRestore = document.createElement('button');
+      btnRestore.className = 'flex items-center gap-1.5 bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 text-xs sm:text-sm font-medium px-3 py-2 rounded-lg border border-amber-700/60 transition';
+      btnRestore.title = 'Restaurar estado desde un archivo JSON';
+      btnRestore.innerHTML = `<i data-lucide="upload" class="w-4 h-4"></i><span class="hidden xl:inline">Restaurar</span>`;
+      btnRestore.addEventListener('click', triggerJSONRestore);
+      dynamicAdminContainer.appendChild(btnRestore);
     }
 
     const btnLogout = document.createElement('button');
